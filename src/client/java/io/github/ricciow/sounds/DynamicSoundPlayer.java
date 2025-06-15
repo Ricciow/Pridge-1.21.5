@@ -1,7 +1,10 @@
 package io.github.ricciow.sounds;
 
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import io.github.ricciow.PridgeClient;
-import io.github.ricciow.format.ChatFormat;
+import io.github.ricciow.util.TextParser;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.client.MinecraftClient;
@@ -13,8 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -29,7 +30,38 @@ public class DynamicSoundPlayer {
 
     public DynamicSoundPlayer(Path SOUNDS_DIR) {
         this.SOUNDS_DIR = SOUNDS_DIR;
+
+        //Create sounds directory if it doesn't exist
         loadFromDefaultAsset();
+
+        //Create sounds command
+        PridgeClient.COMMAND_MANAGER.addCommand(
+            ClientCommandManager
+                .literal("pridgesounds")
+                    .then(
+                        ClientCommandManager.argument("sound name", StringArgumentType.greedyString())
+                            .executes(context -> {
+                                String argument = StringArgumentType.getString(context, "sound name");
+                                if(isSound(argument)) {
+                                    play(argument.replaceAll(" ", "_"));
+                                    context.getSource().sendFeedback(TextParser.parse("&6&lPlaying sound: &e" + argument));
+                                }
+                                else {
+                                    context.getSource().sendFeedback(TextParser.parse("&c&lSound not found"));
+                                }
+                                return Command.SINGLE_SUCCESS;
+                            })
+                    )
+                    .executes(context -> {
+                        StringBuilder builder = new StringBuilder("&6&lAvailable Sounds: &e");
+
+                        List<String> soundNames = getSoundNames().stream().map(name -> name.replaceAll("_", " ")).toList();
+                        builder.append(String.join("&f, &e", soundNames));
+
+                        context.getSource().sendFeedback(TextParser.parse(builder.toString()));
+                        return Command.SINGLE_SUCCESS;
+                    })
+        );
     }
 
     public void play(String fileName) {
@@ -123,6 +155,16 @@ public class DynamicSoundPlayer {
             }
         }
         return List.of();
+    }
+
+    public boolean isSound(String sound) {
+        List<String> oggFileNames = getSoundNames();
+
+        Optional<String> soundToPlay = oggFileNames.stream()
+                .filter(soundName -> soundName.replaceAll("_" , "").equals(sound))
+                .findFirst();
+
+        return  soundToPlay.isPresent();
     }
 
     /**

@@ -3,6 +3,7 @@ package io.github.ricciow.sounds;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import io.github.ricciow.PridgeClient;
+import io.github.ricciow.config.PridgeConfig;
 import io.github.ricciow.util.TextParser;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.loader.api.FabricLoader;
@@ -27,6 +28,7 @@ public class DynamicSoundPlayer {
     private static final Logger LOGGER = LoggerFactory.getLogger("DynamicSoundPlayer");
     private final Path SOUNDS_DIR;
     private final String MOD_ID = PridgeClient.MOD_ID;
+    private static final PridgeConfig CONFIG = PridgeClient.getConfig();
 
     public DynamicSoundPlayer(Path SOUNDS_DIR) {
         this.SOUNDS_DIR = SOUNDS_DIR;
@@ -177,6 +179,12 @@ public class DynamicSoundPlayer {
                 .filter(soundName -> message.contains("*" + soundName.replaceAll("_", " ") + "*"))
                 .findFirst(); // Plays the first matching sound found
 
-        soundToPlay.ifPresent(this::play);
+        if(soundToPlay.isPresent()) {
+            String soundPlayed = soundToPlay.get();
+            if(CONFIG.developerCategory.dev_enabled) {
+                LOGGER.info("Played {} sound for the message: {}", soundPlayed, message);
+            }
+            play(soundPlayed);
+        }
     }
 }

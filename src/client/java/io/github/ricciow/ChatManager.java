@@ -11,6 +11,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import org.slf4j.Logger;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -29,6 +30,7 @@ public class ChatManager {
     private static final Pattern GUILD_CHAT_PATTERN = Pattern.compile("^Guild > (.*?): (.*)$");
     private static final Pattern STATUS_CHAT_PATTERN = Pattern.compile("^Guild > (.*?) (joined|left)\\.$");
     private static final Pattern PRIVATE_CHAT_PATTERN = Pattern.compile("^From (.*?): (.*)$");
+    private static final Logger LOGGER = PridgeClient.LOGGER;
 
     private ChatHud CHAT_HUD;
 
@@ -52,6 +54,10 @@ public class ChatManager {
     public boolean onReceiveChatMessage(Text message, boolean overlay) {
         if(CONFIG.developerCategory.enabled) {
             if(overlay) return true;
+
+            if(CONFIG.developerCategory.dev_enabled) {
+                LOGGER.info("Received message: {}", message);
+            }
 
             String cleanRawMessage = Formatting.strip(message.getString());
             if (cleanRawMessage == null) {
@@ -130,6 +136,9 @@ public class ChatManager {
                 String middlePart = chatContent.substring(1);
                 if (endsWithSplit) {
                     incompleteMessage += middlePart.substring(0, middlePart.length() - 1);
+                    if(CONFIG.developerCategory.dev_enabled) {
+                        LOGGER.info("Incomplete message was hid: {}", incompleteMessage);
+                    }
                     return false;
                 } else {
                     finalContent = incompleteMessage + middlePart;
@@ -142,6 +151,9 @@ public class ChatManager {
         } else {
             if (endsWithSplit) {
                 incompleteMessage = chatContent.substring(0, chatContent.length() - 1);
+                if(CONFIG.developerCategory.dev_enabled) {
+                    LOGGER.info("Incomplete message was hid: {}", incompleteMessage);
+                }
                 return false;
             } else {
                 finalContent = chatContent;
@@ -151,6 +163,9 @@ public class ChatManager {
         if (finalContent != null) {
             FormatResult formattedContent = FormatManager.formatText(finalContent);
             if (formattedContent != null) {
+                if(CONFIG.developerCategory.dev_enabled) {
+                    LOGGER.info("Message was formatted to: {}", formattedContent);
+                }
                 sendMessage(formattedContent.getText());
                 return false;
             }

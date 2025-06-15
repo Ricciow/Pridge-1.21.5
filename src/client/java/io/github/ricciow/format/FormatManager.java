@@ -70,9 +70,9 @@ public class FormatManager {
                 LOGGER.info("Loading existing format file...");
                 config = GSON.fromJson(reader, ChatFormat.class);
                 if (config == null) {
-                    throw new IOException("format file is empty or corrupted.");
+                    throw new IOException("Format file is empty or corrupted.");
                 }
-                LOGGER.info("format loaded successfully.");
+                LOGGER.info("Format loaded successfully.");
             } catch (IOException | JsonSyntaxException e) {
                 LOGGER.error("Failed to load format file! Creating a new default format from asset.", e);
                 loadFromDefaultAssetAndSave();
@@ -96,7 +96,7 @@ public class FormatManager {
             Files.createDirectories(configFile.getParent());
             try (FileWriter writer = new FileWriter(configFile.toFile())) {
                 GSON.toJson(config, writer);
-                LOGGER.info("format saved successfully to {}", configFile);
+                LOGGER.info("Format saved successfully to {}", configFile);
             }
         } catch (IOException e) {
             LOGGER.error("Failed to save format file.", e);

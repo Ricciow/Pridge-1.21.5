@@ -5,10 +5,6 @@ import io.github.notenoughupdates.moulconfig.Config;
 import io.github.notenoughupdates.moulconfig.annotations.Category;
 import io.github.ricciow.config.categories.*;
 
-
-import java.util.ArrayList;
-import java.util.List;
-
 public class PridgeConfig extends Config {
     @Override
     public String getTitle() {

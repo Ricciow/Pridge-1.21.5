@@ -1,7 +1,5 @@
 package io.github.ricciow.format;
 
-import io.github.ricciow.util.TextParser;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;

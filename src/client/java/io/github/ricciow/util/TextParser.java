@@ -3,8 +3,6 @@ package io.github.ricciow.util;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 
-import java.net.URI;
-
 public class TextParser {
 
     /**

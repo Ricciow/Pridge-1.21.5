@@ -3,7 +3,6 @@ package io.github.ricciow;
 import io.github.ricciow.config.PridgeConfig;
 import io.github.ricciow.format.FormatManager;
 import io.github.ricciow.format.FormatResult;
-import io.github.ricciow.format.SpecialFunctions;
 import io.github.ricciow.util.ColorCode;
 import io.github.ricciow.util.TextParser;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
@@ -13,7 +12,6 @@ import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
-import java.awt.*;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;

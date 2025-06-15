@@ -1,17 +1,13 @@
 package io.github.ricciow.mixin.client;
 
-import io.github.ricciow.PridgeClient;
 import net.minecraft.client.sound.Sound;
 import net.minecraft.client.sound.SoundManager;
 import net.minecraft.client.sound.WeightedSoundSet;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.floatprovider.FloatSupplier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.function.Supplier;
 
 @Mixin(SoundManager.class)
 public class SoundManagerMixin {

@@ -6,6 +6,7 @@ import com.google.gson.JsonSyntaxException;
 
 import io.github.ricciow.PridgeClient;
 
+import io.github.ricciow.util.UrlContentFetcher;
 import net.fabricmc.loader.api.FabricLoader;
 
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -23,6 +25,7 @@ public class FormatManager {
 
     private static final Logger LOGGER = PridgeClient.LOGGER;
     private static final Gson GSON;
+    private static final String FORMAT_URL = "https://raw.githubusercontent.com/Ricciow/Pridge-1.21.5/master/src/main/resources/assets/pridge/formats_default.json";
 
     static {
         RuntimeTypeAdapterFactory<FormatRule> ruleAdapterFactory = RuntimeTypeAdapterFactory
@@ -52,6 +55,16 @@ public class FormatManager {
     }
 
     public void load() {
+        if(PridgeClient.getConfig().developerCategory.auto_update) {
+            try {
+                LOGGER.info("Loaded formattings from GitHub");
+                loadFromGithub();
+                save();
+                return;
+            } catch (IOException | URISyntaxException e) {
+                LOGGER.error("Failed to load from github:", e);
+            }
+        }
         if (Files.exists(configFile)) {
             try (FileReader reader = new FileReader(configFile.toFile())) {
                 LOGGER.info("Loading existing format file...");
@@ -102,6 +115,11 @@ public class FormatManager {
             // If loading from assets fails, create an empty format as a last resort.
             this.config = new ChatFormat();
         }
+    }
+
+    private void loadFromGithub() throws IOException, URISyntaxException {
+        String format = UrlContentFetcher.fetchContentFromURL(FORMAT_URL);
+        this.config = GSON.fromJson(format, ChatFormat.class);
     }
 
     /**

@@ -18,5 +18,5 @@ public class DeveloperCategory {
     @Expose
     @ConfigOption(name="Auto update", desc="Updates the formattings automatically upon loading Minecraft")
     @ConfigEditorBoolean
-    public boolean auto_update = false;
+    public boolean auto_update = true;
 }

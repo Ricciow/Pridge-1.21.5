@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "io.github.ricciow.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "client.SoundManagerMixin",
+    "client.SoundLoaderMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

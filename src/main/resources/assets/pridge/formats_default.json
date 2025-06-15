@@ -1,0 +1,374 @@
+{
+  "version": "1.0.0",
+  "formats": [
+    {
+      "type": "regex",
+      "trigger": "I choose (.*)",
+      "finalFormat": "&eI choose &f&l$1",
+      "groupFormatting": {}
+    },
+    {
+      "type": "string",
+      "trigger": "Sent online guild members to bridge channel.",
+      "finalFormat": "&eSent online guild members to bridge channel."
+    },
+    {
+      "type": "string",
+      "trigger": "Sent guild list to bridge channel.",
+      "finalFormat": "&eSent guild list to bridge channel."
+    },
+    {
+      "type": "string",
+      "trigger": "⚠ No permission",
+      "finalFormat": "&c&lUr not allowed to do that! >:("
+    },
+    {
+      "type": "string",
+      "trigger": "⚠ No username provided. This command only works in-game (for non-staff members).",
+      "finalFormat": "&c&l⚠ &cNo username provided.\n &7This command only works in-game (for non-staff members)."
+    },
+    {
+      "type": "regex",
+      "trigger": "^⚠ Usage: (.+) (.+)$",
+      "finalFormat": "&6&lCorrect syntax:\n &e_$1 $2",
+      "groupFormatting": {}
+    },
+    {
+      "type": "regex",
+      "trigger": "⚠ (.+)",
+      "finalFormat": "&c&l⚠ &c$1",
+      "groupFormatting": {}
+    },
+    {
+      "type": "stringarray",
+      "trigger": [
+        "It is certain.", "It is decidedly so.", "Without a doubt.", "Yes - definitely.",
+        "You may rely on it.", "As I see it, yes.", "Most likely.", "Outlook good.", "Yes.",
+        "Signs point to yes.", "Don't count on it.", "My reply is no.", "My sources say no.",
+        "Outlook not so good.", "Very doubtful.", "Your perseverance will lead to great achievements.",
+        "A journey of a thousand miles begins with a single step.", "Your talents will be recognized and rewarded.",
+        "The best way to predict the future is to create it.",
+        "Good things come to those who wait, but better things come to those who work for it.",
+        "Your kindness will open doors of opportunity.", "Believe in yourself, and others will too.",
+        "Your optimism will bring you joy and success.", "The secret to success is to know that you have failed before.",
+        "Your creativity will lead to great innovation.", "Hard work and dedication will bring you closer to your goals.",
+        "You are capable of achieving anything you set your mind to.", "Embrace change and welcome new opportunities.",
+        "Trust your instincts, they will guide you in the right direction.",
+        "Your positive attitude will attract positive outcomes.", "Your farming (macroing) skills will yield plenty of coin.",
+        "The dungeons hold great treasures for those who dare to explore.",
+        "Wise investments in the Auction House will lead to great wealth.",
+        "The riches of the End will reveal themselves to you in due time.", "Your combat prowess will be legendary.",
+        "Hard work in mining will uncover rare ores and precious gems.", "We do not care about your networth.",
+        "Your enchanting abilities will bring forth expensive enchantments.",
+        "A wise adventurer knows the value of teamwork in dungeons.", "A dragon pet awaits you in the nest.",
+        "Your fishing skills will reel in valuable rewards.", "A generous heart will attract good trades and friendships.",
+        "The secrets of the Fairy Souls will be revealed to you.", "Help! I'm trapped in Minikloon's basement!",
+        "Nobody cares about your complaints.", "You are already maxed out buddy!", "Role updated!",
+        "Invalid username provided.", "Failed to fetch role for user.", "Failed to fetch profile for user.",
+        "Your role does not have requirements! But you are", "Pong!", "restarting", "Process ended..."
+      ],
+      "finalFormat": "&e${msg}"
+    },
+    {
+      "type": "regex",
+      "trigger": "^Bazaar data for (.+): insta-buy: (.+), insta-sell: (.+)$",
+      "finalFormat": "&6&l$1\n &eInsta-buy: &f$2\n &eInsta-sell: &f$3",
+      "groupFormatting": {}
+    },
+    {
+      "type": "stringarray",
+      "trigger": [
+        "No product found!", "No data found for this floor.", "Invalid fish.",
+        "Could not send a private message to that player.", "You're booping too fast! Wait a while before trying again.",
+        "Can't message an offline player.", "Too many arguments!", "You're scaring too often! Wait a while before trying again."
+      ],
+      "finalFormat": "&c&l${msg}"
+    },
+    {
+      "type": "regex",
+      "trigger": "^Lowest BIN for (.+) is (.+)$",
+      "finalFormat": "&6&lLowest Bin\n &e$1: &f$2",
+      "groupFormatting": {}
+    },
+    {
+      "type": "regex",
+      "trigger": "^Total cost to buy (.+) (.+): (.+) coins, average price per unit: (.+) coins$",
+      "finalFormat": "&a&lBuy\n &6&l$1 $2\n &eTotal: &f$3 &6Coins\n &eAverage: &f$4 &6Coins",
+      "groupFormatting": {}
+    },
+    {
+      "type": "regex",
+      "trigger": "^Total earned from selling (.+) (.+): (.+) coins, average price per unit: (.+) coins$",
+      "finalFormat": "&c&lSell\n &6&l$1 $2\n &eTotal: &f$3 &6Coins\n &eAverage: &f$4 &6Coins",
+      "groupFormatting": {}
+    },
+    {
+      "type": "regex",
+      "trigger": "^Farming weight for (.+) \\((.+)\\): (.+)\\. Collections \\((.+)\\): (.+) \\((.+)\\), (.+) \\((.+)\\)\\.$",
+      "finalFormat": "&2&lFarming Weight\n &6&l$1 ($2)\n &eTotal: &f$3\n &eCollections: &f$4\n &6&lBest:\n &e$5: &f$6\n &e$7: &f$8",
+      "groupFormatting": {}
+    },
+    {
+      "type": "special",
+      "trigger": "^Next (.+) contest in (.+):(.+):(.+)\\.$",
+      "functionName": "contest1"
+    },
+    {
+      "type": "special",
+      "trigger": "^Active contest \\((.+), (.+), (.+)\\) ending in 00:(.+):(.+)! Next (.+) contest in (.+):(.+):(.+)\\.$",
+      "functionName": "contest2"
+    },
+    {
+      "type": "special",
+      "trigger": "^Active contest \\((.+), (.+), (.+)\\) ending in 00:(.+):(.+)! Next contest \\((.+), (.+), (.+)\\) in (.+):(.+):(.+)\\.$",
+      "functionName": "contest3"
+    },
+    {
+      "type": "special",
+      "trigger": "^Next contest \\((.+), (.+), (.+)\\) in (.+):(.+):(.+)\\.$",
+      "functionName": "contest4"
+    },
+    {
+      "type": "regex",
+      "trigger": "^Command (.+) not found, try _help$",
+      "finalFormat": "&cCommand &e$1 &cnot found, try &e_help",
+      "groupFormatting": {}
+    },
+    {
+      "type": "regex",
+      "trigger": "^Trophy fish for (.+) \\((.+)\\): Total: (\\d+) \\(w\\/o Obf 1\\) \\| Bronze: (\\d+)\\/18 \\| Silver: (\\d+)\\/18 \\| Gold: (\\d+)\\/18 \\| Diamond: (\\d+)\\/18$",
+      "finalFormat": "&6&lTrophy fish &f&l- $1 ($2)\n &7&l(w/o Obf 1)\n &e&lTotal: &f$3\n &8&lBronze&f: $4/18\n &7&lSilver&f: $5/18\n &6&lGold&f: $6/18\n &b&lDiamond&f: $7/18",
+      "groupFormatting": {}
+    },
+    {
+      "type": "regex",
+      "trigger": "^Trophy fish for (.+) \\((.+)\\): Total: (\\d+) \\| Bronze: (\\d+)\\/18 \\| Silver: (\\d+)\\/18 \\| Gold: (\\d+)\\/18 \\| Diamond: (\\d+)\\/18$",
+      "finalFormat": "&6&lTrophy fish &f&l- $1 ($2)\n &e&lTotal: &f$3\n &8&lBronze&f: $4/18\n &7&lSilver&f: $5/18\n &6&lGold&f: $6/18\n &b&lDiamond&f: $7/18",
+      "groupFormatting": {}
+    },
+    {
+      "type": "regex",
+      "trigger": "^(.+) caught for (.+) \\((.+)\\): Total .+: (\\d+) \\| Bronze: (\\d+) \\| Silver: (\\d+) \\| Gold: (\\d+) \\| Diamond: (\\d+)$",
+      "finalFormat": "$1 &f&l- $2 ($3)\n &e&lTotal: &f$4\n &8&lBronze&f: $5\n &7&lSilver&f: $6\n &6&lGold&f: $7\n &b&lDiamond&f: $8",
+      "groupFormatting": {
+        "1": {
+          "Obfuscated 1": "&f&l${str}", "Blobfish": "&f&l${str}", "Gusher": "&f&l${str}",
+          "Sulphur Skitter": "&f&l${str}", "Steaming-Hot Flounder": "&f&l${str}",
+          "Obfuscated 2": "&a&l${str}", "Slugfish": "&a&l${str}", "Flyfish": "&a&l${str}",
+          "Obfuscated 3": "&9&l${str}", "Lavahorse": "&9&l${str}", "Mana Ray": "&9&l${str}",
+          "Volcanic Stonefish": "&9&l${str}", "Vanille": "&9&l${str}", "Soul Fish": "&5&l${str}",
+          "Karate Fish": "&5&l${str}", "Skeleton Fish": "&5&l${str}", "Moldfin": "&5&l${str}",
+          "Golden Fish": "&6&l${str}"
+        }
+      }
+    },
+    {
+      "type": "regex",
+      "trigger": "^(.+) slayer data for (.+) \\((.+)\\): Total XP: (.+) \\| Tier kills: \\((.+) \\| (.+) \\| (.+) \\| (.+) \\| (.+)\\)$",
+      "finalFormat": "$1 slayer\n &6&l$2 ($3)\n &e&lTotal Xp: &f$4\n &e&lTier 1&f: $5\n &e&lTier 2&f: $6\n &e&lTier 3&f: $7\n &e&lTier 4&f: $8\n &e&lTier 5&f: $9",
+      "groupFormatting": {
+        "1": {
+          "Blaze": "&4&l${str}", "Enderman": "&5&l${str}", "Zombie": "&2&l${str}",
+          "Wolf": "&7&l${str}", "Vampire": "&c&l${str}", "Spider": "&8&l${str}"
+        }
+      }
+    },
+    {
+      "type": "regex",
+      "trigger": "^(.+) level for (.+) \\((.+)\\): (.+) \\| Total XP: (.+) \\| Overflow XP: (.+)$",
+      "finalFormat": "\n &3&l$1 Exp Stats &6&l- $2 ($3)\n &e&lLevel: &f$4\n &e&lTotal Xp: &f$5\n &e&lOverflow Xp: &f$6",
+      "groupFormatting": {}
+    },
+    {
+      "type": "regex",
+      "trigger": "^(.+) level for (.+) \\((.+)\\): (.+) \\| Total XP: (.+) \\| XP for level (.+): (.+)$",
+      "finalFormat": "\n &3&l$1 Exp Stats &6&l- $2 ($3)\n &e&lLevel: &f$4\n &e&lTotal Xp: &f$5\n &e&lXp for level $6: &f$7",
+      "groupFormatting": {}
+    },
+    {
+      "type": "regex",
+      "trigger": "^\"(.+)\" is not a skill!$",
+      "finalFormat": "&4&l\"$1\" &cis not a skill!",
+      "groupFormatting": {}
+    },
+    {
+      "type": "string",
+      "trigger": "Spam protection moment",
+      "finalFormat": "&c&lNo spamming in here >:("
+    },
+    {
+      "type": "special",
+      "trigger": "^(.+) bestiary for (.+) \\((.+)\\) k\\/d \\(kdr\\): (.+)$",
+      "functionName": "bestiary"
+    },
+    {
+      "type": "special",
+      "trigger": "^(.+) data for (.+) \\((.+)\\) k\\/d \\(kdr\\): (.+)\\/0 $",
+      "functionName": "bestiary2"
+    },
+    {
+      "type": "regex",
+      "trigger": "^(.+) data for (.+) \\((.+)\\) k\\/d \\(kdr\\): 0\\/(.+) $",
+      "finalFormat": "&f&l$2 (&f&l$3)&6&l:\n &6&l$1 - &f&l0&e&l/&f&l$4 &e&l(&4&l0&e&l)",
+      "groupFormatting": {}
+    },
+    {
+      "type": "special",
+      "trigger": "^(.+) completion for (.+) \\((.+)\\): (.+)$",
+      "functionName": "collection"
+    },
+    {
+      "type": "regex",
+      "trigger": "^(.+) data for (.+) \\((.+)\\): (.+)\\/(.+) \\((.+)\\/(.+)\\)$",
+      "finalFormat": "&f&l$2 (&f&l$3)&6&l:\n &6&l$1 - &f&l$4&e&l/&f&l$5 &e&l(&f&l$6&e&l/&f&l$7&e&l)",
+      "groupFormatting": {}
+    },
+    {
+      "type": "regex",
+      "trigger": "^(.+) data for (.+) \\((.+)\\): (.+)\\/(.+) \\((.+)\\)$",
+      "finalFormat": "&f&l$2 (&f&l$3)&6&l:\n &6&l$1 - &f&l$4&e&l/&f&l$5 &e&l(&f&l$6&e&l)",
+      "groupFormatting": {}
+    },
+    {
+      "type": "regex",
+      "trigger": "^Invalid (collection category or item|type or mob): (.+)$",
+      "finalFormat": "&c&lInvalid $1: &4&l$2&c&l.",
+      "groupFormatting": {}
+    },
+    {
+      "type": "regex",
+      "trigger": "^No collection data found for (.+) \\((.+)\\)$",
+      "finalFormat": "&c&lNo collection data found for &4&l$1 ($2)&c&l.",
+      "groupFormatting": {}
+    },
+    {
+      "type": "regex",
+      "trigger": "^Available commands \\(_command\\): (.+)$",
+      "finalFormat": "\n &6&lAvailable commands (&e&l_command&6&l):\n &f$1",
+      "groupFormatting": {}
+    },
+    {
+      "type": "regex",
+      "trigger": "^(.+) data for (.+) \\((.+)\\): Completions: (.+) \\| Fastest time: (.+) \\| Fastest time \\(S\\): (.+) \\| Fastest time \\(S\\+\\): (.+)$",
+      "finalFormat": "&c&l$1 &6&ldata - $2 ($3)\n &eCompletions: &f$4\n &eFastest time: &f$5\n &eFastest time (S): &f$6\n &eFastest time (S+): &f$7",
+      "groupFormatting": {
+        "1": {
+          "F1": "&7&l${str}", "F2": "&7&l${str}", "F3": "&7&l${str}", "F4": "&7&l${str}",
+          "F5": "&7&l${str}", "F6": "&7&l${str}", "F7": "&7&l${str}", "M1": "&c&l${str}",
+          "M2": "&c&l${str}", "M3": "&c&l${str}", "M4": "&c&l${str}", "M5": "&c&l${str}",
+          "M6": "&c&l${str}", "M7": "&c&l${str}"
+        }
+      }
+    },
+    {
+      "type": "regex",
+      "trigger": "^Current: (.+?)\\[(.+?)\\]. Next: (.+?)\\[(.+?)\\] \\+ (.+?)\\[(.+?)\\] in (.+?). Next special: (.+?), in (.+?)\\.$",
+      "finalFormat": "\n  &eCurrent Mayor: $1 &e- &f$2\n\n  &eNext Election in: &f$7\n  &eCandidates:\n    &e- $3: &f$4\n    &e- $5: &f$6\n\n  &eNext Special Mayor: &d&l$8 &ein &f$9",
+      "groupFormatting": {
+        "1": {
+          "Aatrox": "&c&l${str}",
+          "Cole": "&6&l${str}",
+          "Diana": "&b&l${str}",
+          "Diaz": "&e&l${str}",
+          "Finnegan": "&2&l${str}",
+          "Foxy": "&5&l${str}",
+          "Marina": "&3&l${str}",
+          "Paul": "&a&l${str}",
+          "Jerry": "&d&l${str}",
+          "Derpy": "&d&l${str}",
+          "Scorpius": "&d&l${str}",
+          "Unknown": "&8&l${str}"
+        },
+        "3": {
+          "Aatrox": "&c&l${str}",
+          "Cole": "&6&l${str}",
+          "Diana": "&b&l${str}",
+          "Diaz": "&e&l${str}",
+          "Finnegan": "&2&l${str}",
+          "Foxy": "&5&l${str}",
+          "Marina": "&3&l${str}",
+          "Paul": "&a&l${str}",
+          "Jerry": "&d&l${str}",
+          "Derpy": "&d&l${str}",
+          "Scorpius": "&d&l${str}",
+          "Unknown": "&8&l${str}"
+        },
+        "5": {
+          "Aatrox": "&c&l${str}",
+          "Cole": "&6&l${str}",
+          "Diana": "&b&l${str}",
+          "Diaz": "&e&l${str}",
+          "Finnegan": "&2&l${str}",
+          "Foxy": "&5&l${str}",
+          "Marina": "&3&l${str}",
+          "Paul": "&a&l${str}",
+          "Jerry": "&d&l${str}",
+          "Derpy": "&d&l${str}",
+          "Scorpius": "&d&l${str}",
+          "Unknown": "&8&l${str}"
+        },
+        "8": {
+          "Aatrox": "&c&l${str}",
+          "Cole": "&6&l${str}",
+          "Diana": "&b&l${str}",
+          "Diaz": "&e&l${str}",
+          "Finnegan": "&2&l${str}",
+          "Foxy": "&5&l${str}",
+          "Marina": "&3&l${str}",
+          "Paul": "&a&l${str}",
+          "Jerry": "&d&l${str}",
+          "Derpy": "&d&l${str}",
+          "Scorpius": "&d&l${str}",
+          "Unknown": "&8&l${str}"
+        }
+      }
+    },
+    {
+      "type": "regex",
+      "trigger": "^(.+) is in (.+)\\.$",
+      "finalFormat": "$1 &eis in &f$2",
+      "groupFormatting": {
+        "1": {
+          "Aatrox": "&c&l${str}", "Cole": "&6&l${str}", "Diana": "&b&l${str}", "Diaz": "&e&l${str}",
+          "Finnegan": "&2&l${str}", "Foxy": "&5&l${str}", "Marina": "&3&l${str}", "Paul": "&a&l${str}",
+          "Jerry": "&d&l${str}", "Derpy": "&d&l${str}", "Scorpius": "&d&l${str}", "Unknown": "&8&l${str}"
+        }
+      }
+    },
+    {
+      "type": "regex",
+      "trigger": "^Role is already up to date! Missing (.+) Fishing XP and (.+) Skyblock Levels for (.+).$",
+      "finalFormat": "\n &a&lRole is already up to date!\n &6&l$3 - Missing\n &3&l$1 Fishing XP \n &e&l$2 Skyblock levels",
+      "groupFormatting": {}
+    },
+    {
+      "type": "regex",
+      "trigger": "^Booped (.+)!$",
+      "finalFormat": "&d&lBooped &e$1&f!",
+      "groupFormatting": {}
+    },
+    {
+      "type": "regex",
+      "trigger": "^Thanks for the boop, (.+)!$",
+      "finalFormat": "&fThanks for the &d&lBoop&f, &e$1&f!",
+      "groupFormatting": {}
+    },
+    {
+      "type": "regex",
+      "trigger": "Spooked (.+)! >:\\)",
+      "finalFormat": "&6&lSpooked &e$1&6! &c&l>:)",
+      "groupFormatting": {}
+    },
+    {
+      "type": "regex",
+      "trigger": "AAH! You scared me, (.+)!",
+      "finalFormat": "&c&lAAH! &fYou scared me, &e$1&f!",
+      "groupFormatting": {}
+    },
+    {
+      "type": "special",
+      "trigger": "^(.+): (.+)$",
+      "functionName": "discord"
+    }
+  ]
+}

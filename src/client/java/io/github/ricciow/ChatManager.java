@@ -60,6 +60,7 @@ public class ChatManager {
                 return true;
             }
 
+            //Word filters
             String wordFilters = CONFIG.filtersCategory.rawFilter;
             if(!Objects.equals(wordFilters, "")) {
                 Pattern filterRegex = Pattern.compile(wordFilters);
@@ -73,6 +74,7 @@ public class ChatManager {
                 }
             }
 
+            //Sound Player
             if(CONFIG.soundsCategory.enabled) {
                 PridgeClient.SOUND_PLAYER.checkForSounds(cleanRawMessage);
             }

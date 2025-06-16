@@ -166,13 +166,18 @@ public class ImagePreviewRenderer {
         int screenHeight = client.getWindow().getScaledHeight();
         float aspectRatio = (float) imageWidth / imageHeight;
         float desiredWidth = screenWidth * 0.5f;
+
         long handle = client.getWindow().getHandle();
         if (InputUtil.isKeyPressed(handle, GLFW.GLFW_KEY_LEFT_SHIFT)) {
-            desiredWidth = screenWidth * 0.8f;
+            desiredWidth = screenWidth * 0.25f;
+        }
+        if(InputUtil.isKeyPressed(handle, GLFW.GLFW_KEY_LEFT_SHIFT) && InputUtil.isKeyPressed(handle, GLFW.GLFW_KEY_LEFT_CONTROL)) {
+            desiredWidth = screenWidth * 0.75f;
         }
         if (InputUtil.isKeyPressed(handle, GLFW.GLFW_KEY_LEFT_CONTROL)) {
             desiredWidth = this.imageWidth;
         }
+
         float finalWidth = desiredWidth;
         float finalHeight = finalWidth / aspectRatio;
         if (finalHeight > screenHeight) {

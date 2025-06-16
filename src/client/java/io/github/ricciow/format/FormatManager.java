@@ -4,9 +4,19 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import io.github.ricciow.PridgeClient;
 
+import io.github.ricciow.util.TextParser;
 import io.github.ricciow.util.UrlContentFetcher;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
 
 import org.slf4j.Logger;
@@ -20,6 +30,8 @@ import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class FormatManager {
 
@@ -46,33 +58,70 @@ public class FormatManager {
     private final Path configFile;
     public ChatFormat config;
 
+    private class ReloadTypeSuggestionProvider implements SuggestionProvider<FabricClientCommandSource> {
+        @Override
+        public CompletableFuture<Suggestions> getSuggestions(final CommandContext<FabricClientCommandSource> context, final SuggestionsBuilder builder) throws CommandSyntaxException {
+            List<String> types = List.of("assets", "github", "config");
+
+            for (String type : types) {
+                builder.suggest(type);
+            }
+
+            return builder.buildFuture();
+        }
+    }
+
     public FormatManager(String modId) {
         this.modId = modId;
         this.configFile = FabricLoader.getInstance().getConfigDir()
                 .resolve(modId)
                 .resolve("formats.json");
         load();
+
+        PridgeClient.COMMAND_MANAGER.addCommand(ClientCommandManager.literal("reloadprigeformattings")
+                .then(ClientCommandManager.argument("type", StringArgumentType.word())
+                        .suggests(new ReloadTypeSuggestionProvider())
+                        .executes(context -> {
+                            String reloadType = StringArgumentType.getString(context, "type").toLowerCase();
+
+                            switch (reloadType) {
+                                case "assets" -> loadFromDefaultAssetAndSave();
+                                case "github" -> loadFromGithubAndSave();
+                                case "config" -> loadFromConfig();
+                                default -> {
+                                    reloadType = "default mode";
+                                    load();
+                                }
+                            }
+
+                            context.getSource().sendFeedback(TextParser.parse("&a&lReloaded Formattings with " + reloadType));
+                            return Command.SINGLE_SUCCESS;
+                        }))
+                .executes(context -> {
+                    load();
+                    context.getSource().sendFeedback(TextParser.parse("&a&lReloaded Formattings with default mode"));
+                    return Command.SINGLE_SUCCESS;
+                }));
     }
 
-    public void load() {
-        if(PridgeClient.getConfig().developerCategory.auto_update) {
-            try {
-                loadFromGithub();
-                save();
-                LOGGER.info("Loaded formattings from GitHub");
+    public void loadFromGithubAndSave() {
+        try {
+            loadFromGithub();
+            save();
+            LOGGER.info("Loaded formattings from GitHub");
 
-                //Initialize Patterns
-                if (config != null && config.getFormats() != null) {
-                    for (FormatRule rule : config.getFormats()) {
-                        rule.initialize();
-                    }
+            //Initialize Patterns
+            if (config != null && config.getFormats() != null) {
+                for (FormatRule rule : config.getFormats()) {
+                    rule.initialize();
                 }
-
-                return;
-            } catch (IOException | URISyntaxException e) {
-                LOGGER.error("Failed to load from github:", e);
             }
+        } catch (IOException | URISyntaxException e) {
+            LOGGER.error("Failed to load from github:", e);
         }
+    }
+
+    public void loadFromConfig() {
         if (Files.exists(configFile)) {
             try (FileReader reader = new FileReader(configFile.toFile())) {
                 LOGGER.info("Loading existing format file...");
@@ -81,6 +130,14 @@ public class FormatManager {
                     throw new IOException("Format file is empty or corrupted.");
                 }
                 LOGGER.info("Format loaded successfully.");
+
+                //Initialize Patterns
+                if (config != null && config.getFormats() != null) {
+                    for (FormatRule rule : config.getFormats()) {
+                        rule.initialize();
+                    }
+                }
+
             } catch (IOException | JsonSyntaxException e) {
                 LOGGER.error("Failed to load format file! Creating a new default format from asset.", e);
                 loadFromDefaultAssetAndSave();
@@ -89,14 +146,14 @@ public class FormatManager {
             LOGGER.info("No format file found. Creating a new default format from asset...");
             loadFromDefaultAssetAndSave();
         }
+    }
 
-        // IMPORTANT: Initialize all rules AFTER the config object has been populated,
-        // regardless of whether it came from a user file or the default asset.
-        if (config != null && config.getFormats() != null) {
-            for (FormatRule rule : config.getFormats()) {
-                rule.initialize();
-            }
+    public void load() {
+        if(PridgeClient.getConfig().developerCategory.auto_update) {
+            loadFromGithubAndSave();
+            return;
         }
+        loadFromConfig();
     }
 
     public void save() {
@@ -122,6 +179,13 @@ public class FormatManager {
             LOGGER.error("FATAL: Could not load default format from assets! The mod may not function correctly.", e);
             // If loading from assets fails, create an empty format as a last resort.
             this.config = new ChatFormat();
+        }
+        finally {
+            if (config != null && config.getFormats() != null) {
+                for (FormatRule rule : config.getFormats()) {
+                    rule.initialize();
+                }
+            }
         }
     }
 

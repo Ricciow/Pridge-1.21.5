@@ -57,9 +57,17 @@ public class FormatManager {
     public void load() {
         if(PridgeClient.getConfig().developerCategory.auto_update) {
             try {
-                LOGGER.info("Loaded formattings from GitHub");
                 loadFromGithub();
                 save();
+                LOGGER.info("Loaded formattings from GitHub");
+
+                //Initialize Patterns
+                if (config != null && config.getFormats() != null) {
+                    for (FormatRule rule : config.getFormats()) {
+                        rule.initialize();
+                    }
+                }
+
                 return;
             } catch (IOException | URISyntaxException e) {
                 LOGGER.error("Failed to load from github:", e);
@@ -165,8 +173,9 @@ public class FormatManager {
             // The contract of our process() method is to return null if there's no match.
             // So, if the result is NOT null, we have found our match!
             if (result != null) {
-                // Immediately return the result from the first matching rule.
-                LOGGER.info("Ran the format rule: {}", rule);
+                if(PridgeClient.getConfig().developerCategory.dev_enabled) {
+                    LOGGER.info("Ran the format rule: {}", rule);
+                }
                 return result;
             }
         }

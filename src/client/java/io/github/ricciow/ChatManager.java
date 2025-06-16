@@ -52,54 +52,58 @@ public class ChatManager {
     }
 
     public boolean onReceiveChatMessage(Text message, boolean overlay) {
-        if(CONFIG.developerCategory.enabled) {
-            if(overlay) return true;
+        try {
+            if(CONFIG.developerCategory.enabled) {
+                if(overlay) return true;
 
-            if(CONFIG.developerCategory.dev_enabled) {
-                LOGGER.info("Received message: {}", message);
-            }
+                if(CONFIG.developerCategory.dev_enabled) {
+                    LOGGER.info("Received message: {}", message);
+                }
 
-            String cleanRawMessage = Formatting.strip(message.getString());
-            if (cleanRawMessage == null) {
-                return true;
-            }
+                String cleanRawMessage = Formatting.strip(message.getString());
+                if (cleanRawMessage == null) {
+                    return true;
+                }
 
-            //Word filters
-            String wordFilters = CONFIG.filtersCategory.rawFilter;
-            if(!Objects.equals(wordFilters, "")) {
-                Pattern filterRegex = Pattern.compile(wordFilters);
-                Matcher filterMatches = filterRegex.matcher(cleanRawMessage);
+                //Word filters
+                String wordFilters = CONFIG.filtersCategory.rawFilter;
+                if(!Objects.equals(wordFilters, "")) {
+                    Pattern filterRegex = Pattern.compile(wordFilters);
+                    Matcher filterMatches = filterRegex.matcher(cleanRawMessage);
 
-                if(filterMatches.find()) {
-                    if(CONFIG.filtersCategory.placeholder) {
-                        sendMessage(TextParser.parseHoverable("&c&lA message has been filtered.", message));
+                    if(filterMatches.find()) {
+                        if(CONFIG.filtersCategory.placeholder) {
+                            sendMessage(TextParser.parseHoverable("&c&lA message has been filtered.", message));
+                        }
+                        return false;
                     }
-                    return false;
+                }
+
+                //Sound Player
+                if(CONFIG.soundsCategory.enabled) {
+                    PridgeClient.SOUND_PLAYER.checkForSounds(cleanRawMessage);
+                }
+
+                //Guild Chat Message handling
+                Matcher guildMatcher = GUILD_CHAT_PATTERN.matcher(cleanRawMessage);
+                if (guildMatcher.matches()) {
+                    return onReceiveGuildMessage(message, guildMatcher);
+                }
+
+                //Join/Leave handling
+                Matcher statusMatcher = STATUS_CHAT_PATTERN.matcher(cleanRawMessage);
+                if (statusMatcher.matches()) {
+                    return onReceiveStatusMessage(message, statusMatcher);
+                }
+
+                //Direct Message handling
+                Matcher privateMatcher = PRIVATE_CHAT_PATTERN.matcher(cleanRawMessage);
+                if(privateMatcher.matches()) {
+                    return onReceivePrivateMessage(message, privateMatcher);
                 }
             }
-
-            //Sound Player
-            if(CONFIG.soundsCategory.enabled) {
-                PridgeClient.SOUND_PLAYER.checkForSounds(cleanRawMessage);
-            }
-
-            //Guild Chat Message handling
-            Matcher guildMatcher = GUILD_CHAT_PATTERN.matcher(cleanRawMessage);
-            if (guildMatcher.matches()) {
-                return onReceiveGuildMessage(message, guildMatcher);
-            }
-
-            //Join/Leave handling
-            Matcher statusMatcher = STATUS_CHAT_PATTERN.matcher(cleanRawMessage);
-            if (statusMatcher.matches()) {
-                return onReceiveStatusMessage(message, statusMatcher);
-            }
-
-            //Direct Message handling
-            Matcher privateMatcher = PRIVATE_CHAT_PATTERN.matcher(cleanRawMessage);
-            if(privateMatcher.matches()) {
-                return onReceivePrivateMessage(message, privateMatcher);
-            }
+        } catch (Exception e) {
+            LOGGER.error("FATAL: An error occurred on the message: {}", message.getString(), e);
         }
         return true;
     }

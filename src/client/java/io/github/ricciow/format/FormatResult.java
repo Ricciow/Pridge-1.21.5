@@ -35,31 +35,33 @@ public class FormatResult {
      */
     FormatResult(String originalString) {
         this.originalString = originalString;
-        this.simple = true;
+        this.finalText = TextParser.parse(originalString);
+        this.discordText = false;
+        this.botText = true;
     }
 
     public Text getText() {
-        if(simple) {
-            return TextParser.parse(originalString);
+        if(CONFIG == null) {
+            CONFIG = PridgeClient.getConfig();
         }
-        else {
-            if(CONFIG == null) {
-                CONFIG = PridgeClient.getConfig();
-            }
 
-            StringBuilder prefix = new StringBuilder(CONFIG.guildCategory.name);
+        StringBuilder prefix = new StringBuilder(CONFIG.guildCategory.name);
 
-            if(botText) {
-                prefix.append(" ").append(CONFIG.botCategory.name);
-            }
-            if(discordText) {
-                prefix.append(" ").append(CONFIG.discordCategory.representation);
-            }
-
-            prefix.append(" ");
-
-            MutableText mainText = TextParser.parse(prefix.toString());
-            return mainText.append(finalText);
+        if(botText) {
+            prefix.append(" ").append(CONFIG.botCategory.name);
         }
+        if(discordText) {
+            prefix.append(" ").append(CONFIG.discordCategory.representation);
+        }
+
+        prefix.append(" ");
+
+        MutableText mainText = TextParser.parse(prefix.toString());
+        return mainText.append(finalText);
+    }
+
+    @Override
+    public String toString() {
+        return getText().getString();
     }
 }

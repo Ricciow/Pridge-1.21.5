@@ -41,13 +41,15 @@ public class PridgeClient implements ClientModInitializer {
 	public static final CommandManager COMMAND_MANAGER = new CommandManager();
 
 	public static final Path CONFIG_DIR = FabricLoader.getInstance().getConfigDir().resolve(MOD_ID);
-	public static final DynamicSoundPlayer SOUND_PLAYER = new DynamicSoundPlayer(CONFIG_DIR.resolve("sounds"));
+	public static DynamicSoundPlayer SOUND_PLAYER;
 
 	@Override
 	public void onInitializeClient() {
 		LOGGER.info("Initializing Pridge (Client)...");
 
 		initializeConfig();
+
+		SOUND_PLAYER = new DynamicSoundPlayer(CONFIG_DIR.resolve("sounds"));
 
 		// Load the formats
 		FORMATS = new FormatManager(MOD_ID);
@@ -120,6 +122,6 @@ public class PridgeClient implements ClientModInitializer {
 	}
 
 	public static PridgeConfig getConfig() {
-		return  CONFIG.getInstance();
+		return CONFIG.getInstance();
 	}
 }

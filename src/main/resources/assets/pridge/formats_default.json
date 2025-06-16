@@ -30,7 +30,7 @@
     {
       "type": "regex",
       "trigger": "^⚠ Usage: (.+) (.+)$",
-      "finalFormat": "&6&lCorrect syntax:\n &e_$1 $2",
+      "finalFormat": "&6&lCorrect syntax:\n &e$1 $2",
       "groupFormatting": {}
     },
     {
@@ -80,7 +80,8 @@
       "trigger": [
         "No product found!", "No data found for this floor.", "Invalid fish.",
         "Could not send a private message to that player.", "You're booping too fast! Wait a while before trying again.",
-        "Can't message an offline player.", "Too many arguments!", "You're scaring too often! Wait a while before trying again."
+        "Can't message an offline player.", "Too many arguments!", "You're scaring too often! Wait a while before trying again.",
+        "This command is not available ingame."
       ],
       "finalFormat": "&c&l${msg}"
     },
@@ -93,13 +94,13 @@
     {
       "type": "regex",
       "trigger": "^Total cost to buy (.+) (.+): (.+) coins, average price per unit: (.+) coins$",
-      "finalFormat": "&a&lBuy\n &6&l$1 $2\n &eTotal: &f$3 &6Coins\n &eAverage: &f$4 &6Coins",
+      "finalFormat": "\n&a&l(Buy) &6&l$1 $2\n &eTotal: &f$3 &6Coins\n &eAverage: &f$4 &6Coins",
       "groupFormatting": {}
     },
     {
       "type": "regex",
       "trigger": "^Total earned from selling (.+) (.+): (.+) coins, average price per unit: (.+) coins$",
-      "finalFormat": "&c&lSell\n &6&l$1 $2\n &eTotal: &f$3 &6Coins\n &eAverage: &f$4 &6Coins",
+      "finalFormat": "\n&c&l(Sell) &6&l$1 $2\n &eTotal: &f$3 &6Coins\n &eAverage: &f$4 &6Coins",
       "groupFormatting": {}
     },
     {

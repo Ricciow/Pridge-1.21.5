@@ -1,5 +1,7 @@
 package io.github.ricciow.format;
 
+import io.github.ricciow.PridgeClient;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -35,6 +37,11 @@ class RegexFormatRule extends FormatRule {
     }
 
     public FormatResult process(String text) {
+        if(pattern == null) {
+            PridgeClient.LOGGER.warn("Pattern for {} is null", trigger);
+            return null;
+        }
+
         Matcher matcher = pattern.matcher(text);
 
         if (matcher.matches()) {

@@ -2,15 +2,22 @@ package io.github.ricciow.sounds;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import io.github.ricciow.PridgeClient;
 import io.github.ricciow.config.PridgeConfig;
 import io.github.ricciow.util.TextParser;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundInstance;
+import net.minecraft.command.CommandSource;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
@@ -22,16 +29,31 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 public class DynamicSoundPlayer {
     private static final Logger LOGGER = LoggerFactory.getLogger("DynamicSoundPlayer");
     private final Path SOUNDS_DIR;
     private final String MOD_ID = PridgeClient.MOD_ID;
-    private static final PridgeConfig CONFIG = PridgeClient.getConfig();
+    private static PridgeConfig CONFIG;
+
+    private class SoundsSuggestionProvider implements SuggestionProvider<FabricClientCommandSource> {
+        @Override
+        public CompletableFuture<Suggestions> getSuggestions(final CommandContext<FabricClientCommandSource> context, final SuggestionsBuilder builder) throws CommandSyntaxException {
+            List<String> sounds = getSoundNames();
+
+            for (String sound : sounds) {
+                builder.suggest(sound);
+            }
+
+            return builder.buildFuture();
+        }
+    }
 
     public DynamicSoundPlayer(Path SOUNDS_DIR) {
         this.SOUNDS_DIR = SOUNDS_DIR;
+        CONFIG = PridgeClient.getConfig();
 
         //Create sounds directory if it doesn't exist
         loadFromDefaultAsset();
@@ -42,6 +64,7 @@ public class DynamicSoundPlayer {
                 .literal("pridgesounds")
                     .then(
                         ClientCommandManager.argument("sound name", StringArgumentType.greedyString())
+                            .suggests(new SoundsSuggestionProvider())
                             .executes(context -> {
                                 String argument = StringArgumentType.getString(context, "sound name");
                                 if(isSound(argument)) {
@@ -100,20 +123,17 @@ public class DynamicSoundPlayer {
     private void loadFromDefaultAsset() {
         // Only copy upon first load
         if(Files.exists(SOUNDS_DIR)) return;
-        System.out.println("Copying sound files...");
 
         Optional<ModContainer> modContainerOpt = FabricLoader.getInstance().getModContainer(MOD_ID);
         if (modContainerOpt.isEmpty()) {
             return;
         }
-        System.out.println("Copying sound files... 2");
 
         try {
             Path sourceSoundsPath = modContainerOpt.get().findPath("assets/" + MOD_ID + "/sounds")
                     .orElseThrow(() -> new IOException("Could not find sounds directory in mod assets!"));
             Files.createDirectories(SOUNDS_DIR);
 
-            System.out.println("Copying sound files... 3");
 
             try (Stream<Path> stream = Files.walk(sourceSoundsPath)) {
                 stream.forEach(sourcePath -> {
@@ -127,9 +147,8 @@ public class DynamicSoundPlayer {
                         } else {
                             Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
                         }
-                        System.out.println("Copying sound files... 4");
                     } catch (IOException ignored) {
-                        System.out.println("Copying sound files... 5");
+
                     }
                 });
             }
@@ -163,7 +182,7 @@ public class DynamicSoundPlayer {
         List<String> oggFileNames = getSoundNames();
 
         Optional<String> soundToPlay = oggFileNames.stream()
-                .filter(soundName -> soundName.replaceAll("_" , "").equals(sound))
+                .filter(soundName -> soundName.equals(sound.replaceAll(" ", "_")))
                 .findFirst();
 
         return  soundToPlay.isPresent();

@@ -11,6 +11,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import io.github.ricciow.CommandManager;
 import io.github.ricciow.PridgeClient;
 
 import io.github.ricciow.util.TextParser;
@@ -58,19 +59,6 @@ public class FormatManager {
     private final Path configFile;
     public ChatFormat config;
 
-    private class ReloadTypeSuggestionProvider implements SuggestionProvider<FabricClientCommandSource> {
-        @Override
-        public CompletableFuture<Suggestions> getSuggestions(final CommandContext<FabricClientCommandSource> context, final SuggestionsBuilder builder) throws CommandSyntaxException {
-            List<String> types = List.of("assets", "github", "config");
-
-            for (String type : types) {
-                builder.suggest(type);
-            }
-
-            return builder.buildFuture();
-        }
-    }
-
     public FormatManager(String modId) {
         this.modId = modId;
         this.configFile = FabricLoader.getInstance().getConfigDir()
@@ -80,7 +68,7 @@ public class FormatManager {
 
         PridgeClient.COMMAND_MANAGER.addCommand(ClientCommandManager.literal("reloadprigeformattings")
                 .then(ClientCommandManager.argument("type", StringArgumentType.word())
-                        .suggests(new ReloadTypeSuggestionProvider())
+                        .suggests(new CommandManager.StringListSuggestionProvider(List.of("assets", "github", "config")))
                         .executes(context -> {
                             String reloadType = StringArgumentType.getString(context, "type").toLowerCase();
 

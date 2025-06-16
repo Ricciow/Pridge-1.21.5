@@ -7,6 +7,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import io.github.ricciow.CommandManager;
 import io.github.ricciow.PridgeClient;
 import io.github.ricciow.config.PridgeConfig;
 import io.github.ricciow.util.TextParser;
@@ -38,19 +39,6 @@ public class DynamicSoundPlayer {
     private final String MOD_ID = PridgeClient.MOD_ID;
     private static PridgeConfig CONFIG;
 
-    private class SoundsSuggestionProvider implements SuggestionProvider<FabricClientCommandSource> {
-        @Override
-        public CompletableFuture<Suggestions> getSuggestions(final CommandContext<FabricClientCommandSource> context, final SuggestionsBuilder builder) throws CommandSyntaxException {
-            List<String> sounds = getSoundNames();
-
-            for (String sound : sounds) {
-                builder.suggest(sound);
-            }
-
-            return builder.buildFuture();
-        }
-    }
-
     public DynamicSoundPlayer(Path SOUNDS_DIR) {
         this.SOUNDS_DIR = SOUNDS_DIR;
         CONFIG = PridgeClient.getConfig();
@@ -64,7 +52,7 @@ public class DynamicSoundPlayer {
                 .literal("pridgesounds")
                     .then(
                         ClientCommandManager.argument("sound name", StringArgumentType.greedyString())
-                            .suggests(new SoundsSuggestionProvider())
+                            .suggests(new CommandManager.StringListSuggestionProvider(getSoundNames()))
                             .executes(context -> {
                                 String argument = StringArgumentType.getString(context, "sound name");
                                 if(isSound(argument)) {

@@ -1,8 +1,9 @@
+import net.fabricmc.loom.task.RemapJarTask
+
 plugins {
 	id 'fabric-loom' version "${loom_version}"
 	id 'maven-publish'
-	// Added the shadow plugin to handle shading dependencies.
-	id 'com.github.johnrengelman.shadow' version '8.1.1'
+	id 'com.gradleup.shadow' version '8.3.5'
 }
 
 version = project.mod_version
@@ -10,26 +11,6 @@ group = project.maven_group
 
 base {
 	archivesName = project.archives_base_name
-}
-
-repositories {
-	mavenCentral()
-	// Added the repository for MoulConfig
-	maven {
-		url = "https://maven.notenoughupdates.org/releases/"
-	}
-	// Your other repositories would go here.
-}
-
-// This defines a new configuration for dependencies that we want to shade.
-configurations {
-	shadowModImpl
-
-	// Configure the existing 'modImplementation' to extend from our shadow configuration.
-	// This makes dependencies in 'shadowModImpl' available during compilation.
-	modImplementation {
-		extendsFrom shadowModImpl
-	}
 }
 
 loom {
@@ -41,34 +22,36 @@ loom {
 			sourceSet sourceSets.client
 		}
 	}
+
+	accessWidenerPath = file("src/main/resources/pridge.aw")
+}
+
+repositories {
+	mavenCentral()
+	maven {
+		url = "https://maven.notenoughupdates.org/releases/"
+	}
+}
+
+// A dedicated configuration for dependencies to be shaded.
+configurations {
+	shadowModImpl
 }
 
 dependencies {
-	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-
-	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-
-	// Added the specific version for the Kotlin standard library.
 	modImplementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.23"
 
-	// Add MoulConfig to our custom configuration.
+	// Add moulconfig to our custom shadow configuration.
+	// This will pull in moulconfig and all of its transitive dependencies.
 	shadowModImpl "org.notenoughupdates.moulconfig:modern-1.21.5:3.10.0"
-}
 
-
-// Configure the shadowJar task. This now correctly references the plugin and configuration.
-tasks.named('shadowJar') {
-	// We tell shadowJar to use the dependencies from our custom configuration.
-	configurations = [project.configurations.shadowModImpl]
-	// You already had the relocation correct, which is great!
-	relocate("io.github.notenoughupdates.moulconfig", "pridge.mod.deps.moulconfig")
-
-	// Set the classifier for the shaded jar to avoid confusion with the regular jar.
-	archiveClassifier.set('dev-shadow')
+	// Make the shaded dependencies available at compile time.
+	configurations.modImplementation.extendsFrom(configurations.shadowModImpl)
 }
 
 processResources {
@@ -85,31 +68,65 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 java {
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
 	withSourcesJar()
-
 	sourceCompatibility = JavaVersion.VERSION_21
 	targetCompatibility = JavaVersion.VERSION_21
 }
 
+shadowJar {
+	// Include the client-specific code in the final JAR
+	from sourceSets.named("client").map { it.output }
+	// Specify that we are shading dependencies from our custom configuration
+	configurations = [project.configurations.shadowModImpl]
+
+	// *** CRITICAL FIX #1: Merge service files ***
+	// This prevents ServiceLoader failures by merging META-INF/services files
+	// from all dependencies and relocating the class names within them.
+	mergeServiceFiles()
+
+	// Relocate the moulconfig package to prevent classpath conflicts.
+	relocate("io.github.notenoughupdates.moulconfig", "io.github.ricciow.deps.moulconfig")
+
+	// Set a classifier for the intermediate, un-remapped shadow JAR.
+	archiveClassifier.set("all-dev")
+}
+
+task("remapShadowJar", type: RemapJarTask, dependsOn: shadowJar) {
+	// *** REFINEMENT #1: Use.set() for Gradle properties ***
+	input.set(shadowJar.archiveFile)
+
+	// Set the classifier for the final, remapped, distributable JAR.
+	// This will produce 'pridge-<version>-all.jar'.
+	archiveClassifier.set("")
+
+	// *** REFINEMENT #2: Ensure compatibility with Loom's dependency system ***
+	addNestedDependencies.set(true)
+}
+
+remapJar {
+	archiveClassifier.set("noShadow")
+}
+
+// Ensure the final remapped JAR is part of the main build artifacts.
+assemble {
+	dependsOn "remapShadowJar"
+}
+
 jar {
+	// The standard jar task will now produce a "thin" dev jar.
 	from("LICENSE") {
 		rename { "${it}_${project.archives_base_name}"}
 	}
 }
 
-// configure the maven publication
 publishing {
 	publications {
 		create("mavenJava", MavenPublication) {
 			artifactId = project.archives_base_name
+			// This should be configured to publish the remapped shadow JAR if desired.
 			from components.java
 		}
 	}
-
-	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
 	repositories {
 		// Add repositories to publish to here.
 	}

@@ -58,6 +58,7 @@ public class FormatManager {
     private final String modId;
     private final Path configFile;
     public ChatFormat config;
+    private String lastReloadType = "default";
 
     public FormatManager(String modId) {
         this.modId = modId;
@@ -68,7 +69,7 @@ public class FormatManager {
 
         PridgeClient.COMMAND_MANAGER.addCommand(ClientCommandManager.literal("reloadprigeformattings")
                 .then(ClientCommandManager.argument("type", StringArgumentType.word())
-                        .suggests(new CommandManager.StringListSuggestionProvider(List.of("assets", "github", "config")))
+                        .suggests(new CommandManager.StringListSuggestionProvider(List.of("assets", "github", "config", "default")))
                         .executes(context -> {
                             String reloadType = StringArgumentType.getString(context, "type").toLowerCase();
 
@@ -77,17 +78,26 @@ public class FormatManager {
                                 case "github" -> loadFromGithubAndSave();
                                 case "config" -> loadFromConfig();
                                 default -> {
-                                    reloadType = "default mode";
+                                    reloadType = "default";
                                     load();
                                 }
                             }
 
+                            lastReloadType = reloadType;
                             context.getSource().sendFeedback(TextParser.parse("&a&lReloaded Formattings with " + reloadType));
                             return Command.SINGLE_SUCCESS;
                         }))
                 .executes(context -> {
-                    load();
-                    context.getSource().sendFeedback(TextParser.parse("&a&lReloaded Formattings with default mode"));
+                    switch (lastReloadType) {
+                        case "assets" -> loadFromDefaultAssetAndSave();
+                        case "github" -> loadFromGithubAndSave();
+                        case "config" -> loadFromConfig();
+                        default -> {
+                            load();
+                        }
+                    }
+
+                    context.getSource().sendFeedback(TextParser.parse("&a&lReloaded Formattings with " + lastReloadType));
                     return Command.SINGLE_SUCCESS;
                 }));
     }

@@ -64,13 +64,6 @@ public class PridgeClient implements ClientModInitializer {
 			LoggerFactory.getLogger(MOD_ID).error("Could not create custom sounds directory!", e);
 		}
 
-		COMMAND_MANAGER.addCommand(literal("testSound")
-			.then(argument("sound", StringArgumentType.string())
-			.executes(commandContext -> {
-				SOUND_PLAYER.play(StringArgumentType.getString(commandContext, "sound"));
-				return Command.SINGLE_SUCCESS;
-			})));
-
 		// Image Preview
 		final Identifier IMAGE_PREVIEW_LAYER = Identifier.of("image-preview-mod", "preview-layer");
 		final ImagePreviewRenderer imagePreviewRenderer = new ImagePreviewRenderer();

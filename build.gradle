@@ -23,7 +23,7 @@ loom {
 		}
 	}
 
-	accessWidenerPath = file("src/main/resources/pridge.aw")
+	accessWidenerPath = file("src/main/resources/pridge.accesswidener")
 }
 
 repositories {

@@ -2,6 +2,7 @@ package io.github.ricciow.format;
 
 import io.github.ricciow.PridgeClient;
 import io.github.ricciow.config.PridgeConfig;
+import io.github.ricciow.util.ColorCode;
 import io.github.ricciow.util.STuF;
 import io.github.ricciow.util.TextParser;
 import net.minecraft.text.ClickEvent;
@@ -223,11 +224,11 @@ public class SpecialFunctions {
                 if (valueStr != null) {
                     double value = Double.parseDouble(valueStr);
                     String color;
-                    if (value > 1)        color = "&a";
-                    else if (value > 0.75)color = "&e";
-                    else if (value > 0.5) color = "&6";
-                    else if (value > 0.25)color = "&c";
-                    else                  color = "&4";
+                    if (value > 1)         color = ColorCode.GREEN.getCode();
+                    else if (value > 0.75) color = ColorCode.YELLOW.getCode();
+                    else if (value > 0.5)  color = ColorCode.GOLD.getCode();
+                    else if (value > 0.25) color = ColorCode.RED.getCode();
+                    else                   color = ColorCode.DARK_RED.getCode();
                     newMsg.append(String.format(" &e&l(%s&l%s&e&l)", color, valueStr));
                 } else {
                     newMsg.append(" &e&l(&a&lPro&e&l)");

@@ -8,44 +8,50 @@ import java.util.List;
 import java.util.UUID;
 
 public class PagedMessage{
-    public List<Text> pages;
-    public List<Text> titles;
+
+    private Text prefix;
+    private List<Text> pages;
+    private List<Text> titles;
     private TextColor arrowColor;
     private TextColor disabledArrowColor;
-    public Integer pageNumber = 0;
+    private Integer pageNumber = 0;
     private final ModifiableMessage message;
     private final String id;
     private boolean disabled = false;
 
-    PagedMessage(List<Text> pages, Text title, TextColor arrowColor, @Nullable TextColor disabledArrowColor) {
+    PagedMessage(List<Text> pages, Text title, TextColor arrowColor, @Nullable TextColor disabledArrowColor, @Nullable Text prefix) {
         this.pages =  pages;
         this.titles = List.of(title);
         this.arrowColor = arrowColor;
         this.disabledArrowColor = disabledArrowColor != null ? disabledArrowColor : arrowColor;
         this.id = UUID.randomUUID().toString();
+        this.prefix = prefix;
         message = new ModifiableMessage(buildText(), id);
     }
 
-    PagedMessage(List<Text> pages, List<Text> titles, TextColor arrowColor, @Nullable TextColor disabledArrowColor) {
+    PagedMessage(List<Text> pages, List<Text> titles, TextColor arrowColor, @Nullable TextColor disabledArrowColor, @Nullable Text prefix) {
         this.pages =  pages;
         this.titles = titles;
         this.arrowColor = arrowColor;
         this.disabledArrowColor = disabledArrowColor != null ? disabledArrowColor : arrowColor;
         this.id = UUID.randomUUID().toString();
+        this.prefix = prefix;
         message = new ModifiableMessage(buildText(), id);
     }
 
     private Text buildText() {
-        Text title = titles.get(pageNumber);
+        Text title = null;
+        if(pageNumber <= titles.size()-1) {
+            title = titles.get(pageNumber);
+        }
         if(title == null) {
             title = titles.getFirst();
-
             if(title == null) {
                 title = Text.literal("No title found");
             }
         }
 
-        MutableText baseText = Text.literal("");
+        MutableText baseText = (prefix != null) ? prefix.copy() : Text.literal("");
         baseText.append(Text.literal("<< ")
                 .setStyle(buildLeftStyle())
         );
@@ -101,8 +107,10 @@ public class PagedMessage{
     }
 
     public void setPage(Integer page) {
-        pageNumber = page;
-        message.modify(buildText());
+        if(page >= 0 && page <= pages.size()-1) {
+            pageNumber = page;
+            message.modify(buildText());
+        }
     }
 
     public void nextPage() {
@@ -119,6 +127,6 @@ public class PagedMessage{
 
     @Override
     public String toString() {
-        return "Paged Message id: " + id;
+        return "Paged Message with id: " + id;
     }
 }

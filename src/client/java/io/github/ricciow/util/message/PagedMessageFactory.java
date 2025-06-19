@@ -19,18 +19,18 @@ public class PagedMessageFactory {
     /**
      * Creates a paged message, only the last sent paged message will be able to change pages.
      */
-    public static void createPagedMessage(List<Text> pages, Text title, TextColor arrowColor, @Nullable TextColor disabledArrowColor) {
+    public static void createPagedMessage(List<Text> pages, Text title, TextColor arrowColor, @Nullable TextColor disabledArrowColor, @Nullable Text prefix) {
         if(lastPagedMessage != null) {
             lastPagedMessage.disablePaging();
         }
-        lastPagedMessage = new PagedMessage(pages, title, arrowColor, disabledArrowColor);
+        lastPagedMessage = new PagedMessage(pages, title, arrowColor, disabledArrowColor, prefix);
     }
 
-    public static void createPagedMessage(List<Text> pages, List<Text> titles, TextColor arrowColor, @Nullable TextColor disabledArrowColor) {
+    public static void createPagedMessage(List<Text> pages, List<Text> titles, TextColor arrowColor, @Nullable TextColor disabledArrowColor, @Nullable Text prefix) {
         if(lastPagedMessage != null) {
             lastPagedMessage.disablePaging();
         }
-        lastPagedMessage = new PagedMessage(pages, titles, arrowColor, disabledArrowColor);
+        lastPagedMessage = new PagedMessage(pages, titles, arrowColor, disabledArrowColor, prefix);
     }
 
     public static void initialize() {

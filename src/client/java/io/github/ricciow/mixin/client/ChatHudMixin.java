@@ -33,6 +33,9 @@ public class ChatHudMixin implements IdentifiableChatHud {
     @Shadow
     private void logChatMessage(ChatHudLine message) {}
 
+    @Shadow
+    private int scrolledLines;
+
     public void pridge$addIdentifiableMessage(String id, Text message) {
         addMessage(message);
 
@@ -80,7 +83,9 @@ public class ChatHudMixin implements IdentifiableChatHud {
         }
 
         if(replaced) {
+            int tempScrolledLines = scrolledLines;
             refresh();
+            scrolledLines = tempScrolledLines;
         }
     }
 }

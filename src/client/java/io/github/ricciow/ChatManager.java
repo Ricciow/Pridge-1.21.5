@@ -51,6 +51,13 @@ public class ChatManager {
         CHAT_HUD.addMessage(message);
     }
 
+    private void sendMessage(FormatResult result) {
+        Text message = result.getText();
+        if(message != null) {
+            sendMessage(message);
+        }
+    }
+
     public boolean onReceiveChatMessage(Text message, boolean overlay) {
         try {
             if(CONFIG.developerCategory.enabled) {
@@ -170,7 +177,7 @@ public class ChatManager {
                 if(CONFIG.developerCategory.dev_enabled) {
                     LOGGER.info("Message was formatted to: {}", formattedContent);
                 }
-                sendMessage(formattedContent.getText());
+                sendMessage(formattedContent);
                 return false;
             }
         }

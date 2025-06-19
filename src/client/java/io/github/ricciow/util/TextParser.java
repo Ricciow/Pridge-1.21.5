@@ -12,11 +12,11 @@ public class TextParser {
      */
     public static MutableText parse(String text) {
         MutableText mainText = Text.literal("");
-        String[] parts = text.split("(?=&)"); // Split before each '&' but keep it.
+        String[] parts = text.split("(?=[&§])"); // Split before each '&' but keep it.
         Style currentStyle = Style.EMPTY;
 
         for (String part : parts) {
-            if (part.startsWith("&") && part.length() > 1) {
+            if ((part.startsWith("&") || part.startsWith("§")) && part.length() > 1) {
                 Formatting formatting = Formatting.byCode(part.charAt(1));
                 if (formatting != null) {
                     if (formatting.isColor()) {

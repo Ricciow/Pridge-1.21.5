@@ -5,15 +5,11 @@ import io.github.ricciow.config.PridgeConfig;
 import io.github.ricciow.util.ColorCode;
 import io.github.ricciow.util.STuF;
 import io.github.ricciow.util.TextParser;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
+import net.minecraft.text.*;
+import net.minecraft.util.Formatting;
 
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -198,46 +194,73 @@ public class SpecialFunctions {
     }
 
     private static FormatResult bestiaryHandler(String originalText, Matcher matcher) {
+        int maxPerPage = getConfig().botCategory.getLineCount();
+
         String bestiary = matcher.group(1);
         String user = matcher.group(2);
         String profile = matcher.group(3);
         String message = matcher.group(4);
 
-        Pattern bestiaryEntryPattern = Pattern.compile("(\\w[\\w\\s]* \\d+/\\d+(?: \\([\\d.]+\\))? )");
-        Pattern bestiaryDataPattern = Pattern.compile("(\\w[\\w\\s]*) (\\d+)/(\\d+)(?: \\(([\\d.]+)\\))?");
+        // A single, more robust pattern to capture all data points at once
+        Pattern bestiaryDataPattern = Pattern.compile("(\\w[\\w\\s]*?) (\\d+)/(\\d+)(?: \\(([\\d.]+)\\))?");
 
-        StringBuilder newMsg = new StringBuilder(String.format("\n &6&l%s bestiary - &f&l%s (&f&l%s)&6&l:", bestiary, user, profile));
+        Text prefix = TextParser.parse(String.format("\n &6&l%s bestiary - &f&l%s (&f&l%s)&6&l\n ", bestiary, user, profile));
+        List<Text> pages = new ArrayList<>();
+        StringBuilder currentPageContent = new StringBuilder();
+        int entriesOnPage = 0;
 
-        Matcher entryMatcher = bestiaryEntryPattern.matcher(message);
+        // Use the single pattern on the whole message
+        Matcher entryMatcher = bestiaryDataPattern.matcher(message);
         while (entryMatcher.find()) {
-            String entry = entryMatcher.group(1);
-            Matcher dataMatcher = bestiaryDataPattern.matcher(entry);
+            if (entriesOnPage == maxPerPage) {
+                pages.add(TextParser.parse(currentPageContent.toString()));
+                currentPageContent.setLength(0); // More efficient than new StringBuilder()
+                entriesOnPage = 0;
+            }
 
-            if (dataMatcher.find()) {
-                String name = dataMatcher.group(1).trim();
-                String current = dataMatcher.group(2);
-                String max = dataMatcher.group(3);
-                String valueStr = dataMatcher.group(4); // Can be null
+            String name = entryMatcher.group(1).trim();
+            String current = entryMatcher.group(2);
+            String max = entryMatcher.group(3);
+            String valueStr = entryMatcher.group(4); // Can be null
 
-                newMsg.append(String.format("\n &e&l%s &f&l%s&e&l/&f&l%s", name, current, max));
+            if(entriesOnPage != 0) {
+                currentPageContent.append("\n");
+            }
 
-                if (valueStr != null) {
-                    double value = Double.parseDouble(valueStr);
-                    String color;
-                    if (value > 1)         color = ColorCode.GREEN.getCode();
-                    else if (value > 0.75) color = ColorCode.YELLOW.getCode();
-                    else if (value > 0.5)  color = ColorCode.GOLD.getCode();
-                    else if (value > 0.25) color = ColorCode.RED.getCode();
-                    else                   color = ColorCode.DARK_RED.getCode();
-                    newMsg.append(String.format(" &e&l(%s&l%s&e&l)", color, valueStr));
-                } else {
-                    newMsg.append(" &e&l(&a&lPro&e&l)");
+            currentPageContent.append(String.format(" &e&l%s &f&l%s&e&l/&f&l%s", name, current, max));
+
+            if (valueStr != null) {
+                double value = Double.parseDouble(valueStr);
+                String color;
+                if (value > 1)         color = ColorCode.GREEN.getCode();
+                else if (value > 0.75) color = ColorCode.YELLOW.getCode();
+                else if (value > 0.5)  color = ColorCode.GOLD.getCode();
+                else if (value > 0.25) color = ColorCode.RED.getCode();
+                else                   color = ColorCode.DARK_RED.getCode();
+                currentPageContent.append(String.format(" &e&l(%s&l%s&e&l)", color, valueStr));
+            } else {
+                currentPageContent.append(" &e&l(&a&lPro&e&l)");
+            }
+            entriesOnPage++;
+        }
+
+        // Add the final page if it has any content
+        if (currentPageContent.length() > 0) {
+            if(!pages.isEmpty()) {
+                while (entriesOnPage < maxPerPage) {
+                    currentPageContent.append("\n");
+                    entriesOnPage += 1;
                 }
             }
+            pages.add(TextParser.parse(currentPageContent.toString()));
         }
-        String result = newMsg.toString();
 
-        return new FormatResult(originalText, result, false, true);
+        List<Text> titles = new ArrayList<>();
+        for(int i = 1; i <= pages.size(); i++) {
+            titles.add(TextParser.parse(String.format("&6Page (%s/%s)", i, pages.size())));
+        }
+
+        return new FormatResult(pages, titles, TextColor.fromFormatting(Formatting.DARK_AQUA), TextColor.fromFormatting(Formatting.GRAY), prefix, false, true);
     }
 
     private static FormatResult bestiary2Handler(String originalText, Matcher matcher) {
@@ -255,35 +278,70 @@ public class SpecialFunctions {
     }
 
     private static FormatResult collectionHandler(String originalText, Matcher matcher) {
+        int maxPerPage = getConfig().botCategory.getLineCount();
+
         String skill = matcher.group(1);
         String user = matcher.group(2);
         String profile = matcher.group(3);
         String message = matcher.group(4);
 
-        Pattern entryPattern = Pattern.compile("(\\w[\\w\\s]* \\d+/\\d+ \\([\\d,]+(?:/[\\d,]+)?\\) )");
-        Pattern dataPattern = Pattern.compile("([\\w\\s]*) (\\d+)/(\\d+) \\(([\\d,]+(?:/[\\d,]+)?)\\)");
+        // 1. Replaced the two patterns with a single, more direct one.
+        // This pattern captures all necessary groups in one pass.
+        Pattern dataPattern = Pattern.compile("([\\w\\s]*) (\\d+)/(\\d+) \\(([^)]+)\\)");
 
-        StringBuilder newMsg = new StringBuilder(String.format("&6&l%s collections - &f&l%s (&f&l%s)&6&l:",
+        Text prefix = TextParser.parse(String.format("\n &6&l%s collections - &f&l%s (&f&l%s)&6&l\n ",
                 capitalizeFirstLetter(skill), user, profile));
 
-        Matcher entryMatcher = entryPattern.matcher(message);
+        List<Text> pages = new ArrayList<>();
+        StringBuilder currentPageContent = new StringBuilder();
+        int entriesOnPage = 0;
+
+        // 2. The loop is now simpler, with no nested matching.
+        Matcher entryMatcher = dataPattern.matcher(message);
         while (entryMatcher.find()) {
-            Matcher dataMatcher = dataPattern.matcher(entryMatcher.group(1));
-            if (dataMatcher.find()) {
-                String name = dataMatcher.group(1).trim();
-                String current = dataMatcher.group(2);
-                String max = dataMatcher.group(3);
-                String progress = dataMatcher.group(4); // e.g., "1,234" or "1,234/5,678"
-
-                String formattedProgress = progress.replace("/", "&e&l/&f&l");
-
-                newMsg.append(String.format("\n &e&l%s &f&l%s&e&l/&f&l%s &e&l(&f&l%s&e&l)",
-                        name, current, max, formattedProgress));
+            if (entriesOnPage == maxPerPage) {
+                pages.add(TextParser.parse(currentPageContent.toString()));
+                currentPageContent.setLength(0);
+                entriesOnPage = 0;
             }
+
+            // 3. All data is retrieved directly from the single 'entryMatcher'.
+            String name = entryMatcher.group(1).trim();
+            String current = entryMatcher.group(2);
+            String max = entryMatcher.group(3);
+            String progress = entryMatcher.group(4); // e.g., "1,234" or "1,234/5,678"
+
+            if (entriesOnPage != 0) {
+                currentPageContent.append("\n");
+            }
+
+            String formattedProgress = progress.replace("/", "&e&l/&f&l");
+
+            currentPageContent.append(String.format(" &e&l%s &f&l%s&e&l/&f&l%s &e&l(&f&l%s&e&l)",
+                    name, current, max, formattedProgress));
+
+            entriesOnPage++;
         }
 
-        String result = newMsg.toString();
-        return new FormatResult(originalText, result, false, true);
+        // This logic for handling the final page remains the same.
+        if (currentPageContent.length() > 0) {
+            if(!pages.isEmpty()) {
+                while (entriesOnPage < maxPerPage) {
+                    currentPageContent.append("\n");
+                    entriesOnPage++;
+                }
+            }
+            pages.add(TextParser.parse(currentPageContent.toString()));
+        }
+
+        // This logic for generating titles remains the same.
+        List<Text> titles = new ArrayList<>();
+        for(int i = 1; i <= pages.size(); i++) {
+            titles.add(TextParser.parse(String.format("&6Page (%s/%s)", i, pages.size())));
+        }
+
+        // The return statement is the same.
+        return new FormatResult(pages, titles, TextColor.fromFormatting(Formatting.DARK_AQUA), TextColor.fromFormatting(Formatting.GRAY), prefix, false, true);
     }
 
     private static FormatResult discordHandler(String originalText, Matcher matcher) {

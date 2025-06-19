@@ -315,10 +315,25 @@ public class SpecialFunctions {
                 currentPageContent.append("\n");
             }
 
+            int currentVal = Integer.parseInt(current);
+            int maxVal = Integer.parseInt(max);
+            int medianVal = Math.floorDiv(maxVal, 4);
+
+            ColorCode numberColor;
+            if(currentVal == maxVal) {
+                numberColor = ColorCode.GREEN;
+            }
+            else if (currentVal > medianVal) {
+                numberColor = ColorCode.GOLD;
+            }
+            else {
+                numberColor = ColorCode.RED;
+            }
+
             String formattedProgress = progress.replace("/", "&e&l/&f&l");
 
-            currentPageContent.append(String.format(" &e&l%s &f&l%s&e&l/&f&l%s &e&l(&f&l%s&e&l)",
-                    name, current, max, formattedProgress));
+            currentPageContent.append(String.format(" &e&l%s %s&l%s&e&l/%s&l%s &e&l(&f&l%s&e&l)",
+                    name, numberColor.getCode(), current, numberColor.getCode(), max, formattedProgress));
 
             entriesOnPage++;
         }

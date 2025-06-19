@@ -10,6 +10,7 @@ import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -33,11 +34,11 @@ public class SoundLoaderMixin {
     @Inject(method = "loadStatic", at = @At("HEAD"), cancellable = true)
     private void onLoadStaticSound(Identifier id, CallbackInfoReturnable<CompletableFuture<StaticSound>> cir) {
         if (id.getNamespace().equals(DYNAMIC_SOUND_NAMESPACE)) {
-            cir.setReturnValue(loadDynamicSound(id));
+            cir.setReturnValue(pridge$loadDynamicSound(id));
         }
     }
 
-    private CompletableFuture<StaticSound> loadDynamicSound(Identifier id) {
+    private CompletableFuture<StaticSound> pridge$loadDynamicSound(Identifier id) {
         return CompletableFuture.supplyAsync(() -> {
             Path soundFile = customSoundsDir.resolve(id.getPath());
             if (!Files.exists(soundFile)) {
@@ -47,7 +48,7 @@ public class SoundLoaderMixin {
 
             ShortBuffer pcm = null;
             try (MemoryStack stack = MemoryStack.stackPush()) {
-                ByteBuffer fileBuffer = readToByteBuffer(soundFile);
+                ByteBuffer fileBuffer = pridge$readToByteBuffer(soundFile);
                 IntBuffer channelsBuffer = stack.mallocInt(1);
                 IntBuffer sampleRateBuffer = stack.mallocInt(1);
                 pcm = STBVorbis.stb_vorbis_decode_memory(fileBuffer, channelsBuffer, sampleRateBuffer);
@@ -84,7 +85,7 @@ public class SoundLoaderMixin {
         });
     }
 
-    private ByteBuffer readToByteBuffer(Path path) throws IOException {
+    private ByteBuffer pridge$readToByteBuffer(Path path) throws IOException {
         byte[] bytes;
         try (InputStream stream = Files.newInputStream(path)) {
             bytes = stream.readAllBytes();

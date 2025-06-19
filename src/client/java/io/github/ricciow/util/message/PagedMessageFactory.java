@@ -3,6 +3,8 @@ package io.github.ricciow.util.message;
 import io.github.ricciow.PridgeClient;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.List;
 
 import static com.mojang.brigadier.arguments.StringArgumentType.getString;
@@ -16,22 +18,19 @@ public class PagedMessageFactory {
 
     /**
      * Creates a paged message, only the last sent paged message will be able to change pages.
-     * @param pages
-     * @param title
-     * @param arrowColor
      */
-    public static void createPagedMessage(List<Text> pages, Text title, TextColor arrowColor) {
+    public static void createPagedMessage(List<Text> pages, Text title, TextColor arrowColor, @Nullable TextColor disabledArrowColor) {
         if(lastPagedMessage != null) {
             lastPagedMessage.disablePaging();
         }
-        lastPagedMessage = new PagedMessage(pages, title, arrowColor);
+        lastPagedMessage = new PagedMessage(pages, title, arrowColor, disabledArrowColor);
     }
 
-    public static void createPagedMessage(List<Text> pages, List<Text> titles, TextColor arrowColor) {
+    public static void createPagedMessage(List<Text> pages, List<Text> titles, TextColor arrowColor, @Nullable TextColor disabledArrowColor) {
         if(lastPagedMessage != null) {
             lastPagedMessage.disablePaging();
         }
-        lastPagedMessage = new PagedMessage(pages, titles, arrowColor);
+        lastPagedMessage = new PagedMessage(pages, titles, arrowColor, disabledArrowColor);
     }
 
     public static void initialize() {

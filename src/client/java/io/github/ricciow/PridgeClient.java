@@ -57,6 +57,13 @@ public class PridgeClient implements ClientModInitializer {
 
 		PagedMessageFactory.initialize();
 
+		COMMAND_MANAGER.addCommand(literal("testpagedmessage").executes(commandContext -> {
+			List<Text> pages = List.of(TextParser.parse("P1"), TextParser.parse("P2"), TextParser.parse("P3"));
+			List<Text> titles = List.of(TextParser.parse("Titulo1"), TextParser.parse("Titulo2"), TextParser.parse("Titulo3"));
+			PagedMessageFactory.createPagedMessage(pages, titles, TextColor.fromFormatting(Formatting.DARK_AQUA), TextColor.fromFormatting(Formatting.GRAY));
+			return 1;
+		}));
+
 		SOUND_PLAYER = new DynamicSoundPlayer(CONFIG_DIR.resolve("sounds"));
 
 		// Load the formats

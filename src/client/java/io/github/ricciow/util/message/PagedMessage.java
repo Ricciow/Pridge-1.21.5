@@ -1,6 +1,8 @@
 package io.github.ricciow.util.message;
 
 import net.minecraft.text.*;
+import net.minecraft.util.Formatting;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.UUID;
@@ -9,23 +11,26 @@ public class PagedMessage{
     public List<Text> pages;
     public List<Text> titles;
     private TextColor arrowColor;
+    private TextColor disabledArrowColor;
     public Integer pageNumber = 0;
     private final ModifiableMessage message;
     private final String id;
     private boolean disabled = false;
 
-    PagedMessage(List<Text> pages, Text title, TextColor arrowColor) {
+    PagedMessage(List<Text> pages, Text title, TextColor arrowColor, @Nullable TextColor disabledArrowColor) {
         this.pages =  pages;
         this.titles = List.of(title);
         this.arrowColor = arrowColor;
+        this.disabledArrowColor = disabledArrowColor != null ? disabledArrowColor : arrowColor;
         this.id = UUID.randomUUID().toString();
         message = new ModifiableMessage(buildText(), id);
     }
 
-    PagedMessage(List<Text> pages, List<Text> titles, TextColor arrowColor) {
+    PagedMessage(List<Text> pages, List<Text> titles, TextColor arrowColor, @Nullable TextColor disabledArrowColor) {
         this.pages =  pages;
         this.titles = titles;
         this.arrowColor = arrowColor;
+        this.disabledArrowColor = disabledArrowColor != null ? disabledArrowColor : arrowColor;
         this.id = UUID.randomUUID().toString();
         message = new ModifiableMessage(buildText(), id);
     }
@@ -55,21 +60,39 @@ public class PagedMessage{
     }
 
     private Style buildLeftStyle() {
-        Style baseStyle = Style.EMPTY.withColor(arrowColor);
-        if(disabled) return baseStyle;
+        Style baseStyle = Style.EMPTY.withColor(disabledArrowColor);
+        if(disabled) {
+            return baseStyle
+                    .withHoverEvent(new HoverEvent.ShowText(Text.literal("Paging Disabled")));
+        }
+
+        if(pageNumber != 0) {
+            return baseStyle
+                    .withColor(arrowColor)
+                    .withClickEvent(new ClickEvent.RunCommand("pagedmessage left"))
+                    .withHoverEvent(new HoverEvent.ShowText(Text.literal("Previous page")));
+        }
 
         return baseStyle
-            .withClickEvent(new ClickEvent.RunCommand("pagedmessage left"))
-            .withHoverEvent(new HoverEvent.ShowText(Text.literal("Previous page")));
+                .withHoverEvent(new HoverEvent.ShowText(Text.literal("No pages to the Left!")));
     }
 
     private Style buildRightStyle() {
-        Style baseStyle = Style.EMPTY.withColor(arrowColor);
-        if(disabled) return baseStyle;
+        Style baseStyle = Style.EMPTY.withColor(disabledArrowColor);
+        if(disabled) {
+            return baseStyle
+                    .withHoverEvent(new HoverEvent.ShowText(Text.literal("Paging Disabled")));
+        }
+
+        if(pageNumber != pages.size()-1) {
+            return baseStyle
+                    .withColor(arrowColor)
+                    .withClickEvent(new ClickEvent.RunCommand("pagedmessage right"))
+                    .withHoverEvent(new HoverEvent.ShowText(Text.literal("Next page")));
+        }
 
         return baseStyle
-            .withClickEvent(new ClickEvent.RunCommand("pagedmessage right"))
-            .withHoverEvent(new HoverEvent.ShowText(Text.literal("Next page")));
+                .withHoverEvent(new HoverEvent.ShowText(Text.literal("No pages to the Right!")));
     }
 
     public void disablePaging() {

@@ -9,11 +9,16 @@ import io.github.ricciow.config.PridgeConfig;
 import io.github.ricciow.format.FormatManager;
 import io.github.ricciow.rendering.ImagePreviewRenderer;
 import io.github.ricciow.sounds.DynamicSoundPlayer;
+import io.github.ricciow.util.TextParser;
+import io.github.ricciow.util.message.PagedMessageFactory;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -48,6 +54,8 @@ public class PridgeClient implements ClientModInitializer {
 		LOGGER.info("Initializing Pridge (Client)...");
 
 		initializeConfig();
+
+		PagedMessageFactory.initialize();
 
 		SOUND_PLAYER = new DynamicSoundPlayer(CONFIG_DIR.resolve("sounds"));
 

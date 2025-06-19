@@ -4,7 +4,9 @@
   "compatibilityLevel": "JAVA_21",
   "client": [
     "client.SoundManagerMixin",
-    "client.SoundLoaderMixin"
+    "client.SoundLoaderMixin",
+    "client.ChatHudLineMixin",
+    "client.ChatHudMixin"
   ],
   "injectors": {
     "defaultRequire": 1

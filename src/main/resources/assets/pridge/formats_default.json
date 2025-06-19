@@ -204,12 +204,12 @@
     },
     {
       "type": "special",
-      "trigger": "^(.+) data for (.+) \\((.+)\\) k\\/d \\(kdr\\): (.+)\\/0 $",
+      "trigger": "^(.+) data for (.+) \\((.+)\\) k\\/d \\(kdr\\): (.+)\\/0$",
       "functionName": "bestiary2"
     },
     {
       "type": "regex",
-      "trigger": "^(.+) data for (.+) \\((.+)\\) k\\/d \\(kdr\\): 0\\/(.+) $",
+      "trigger": "^(.+) data for (.+) \\((.+)\\) k\\/d \\(kdr\\): 0\\/(.+)$",
       "finalFormat": "&f&l$2 (&f&l$3)&6&l:\n &6&l$1 - &f&l0&e&l/&f&l$4 &e&l(&4&l0&e&l)",
       "groupFormatting": {}
     },
@@ -390,6 +390,12 @@
           "unknown": "&8&l${str}"
         }
       }
+    },
+    {
+      "type": "regex",
+      "trigger": "^(Jerry|Derpy|Scorpius) in (.+)\\.$",
+      "finalFormat": "&eMayor &d&l$1 &ein: &f$2",
+      "groupFormatting": {}
     },
     {
       "type": "regex",

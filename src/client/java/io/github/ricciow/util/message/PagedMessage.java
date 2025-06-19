@@ -1,6 +1,5 @@
 package io.github.ricciow.util.message;
 
-import io.github.ricciow.util.TextParser;
 import net.minecraft.text.*;
 
 import java.util.List;
@@ -8,7 +7,7 @@ import java.util.UUID;
 
 public class PagedMessage{
     public List<Text> pages;
-    public Text title;
+    public List<Text> titles;
     private TextColor arrowColor;
     public Integer pageNumber = 0;
     private final ModifiableMessage message;
@@ -17,13 +16,30 @@ public class PagedMessage{
 
     PagedMessage(List<Text> pages, Text title, TextColor arrowColor) {
         this.pages =  pages;
-        this.title = title;
+        this.titles = List.of(title);
+        this.arrowColor = arrowColor;
+        this.id = UUID.randomUUID().toString();
+        message = new ModifiableMessage(buildText(), id);
+    }
+
+    PagedMessage(List<Text> pages, List<Text> titles, TextColor arrowColor) {
+        this.pages =  pages;
+        this.titles = titles;
         this.arrowColor = arrowColor;
         this.id = UUID.randomUUID().toString();
         message = new ModifiableMessage(buildText(), id);
     }
 
     private Text buildText() {
+        Text title = titles.get(pageNumber);
+        if(title == null) {
+            title = titles.getFirst();
+
+            if(title == null) {
+                title = Text.literal("No title found");
+            }
+        }
+
         MutableText baseText = Text.literal("");
         baseText.append(Text.literal("<< ")
                 .setStyle(buildLeftStyle())

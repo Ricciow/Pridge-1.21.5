@@ -27,6 +27,13 @@ public class PagedMessageFactory {
         lastPagedMessage = new PagedMessage(pages, title, arrowColor);
     }
 
+    public static void createPagedMessage(List<Text> pages, List<Text> titles, TextColor arrowColor) {
+        if(lastPagedMessage != null) {
+            lastPagedMessage.disablePaging();
+        }
+        lastPagedMessage = new PagedMessage(pages, titles, arrowColor);
+    }
+
     public static void initialize() {
         PridgeClient.COMMAND_MANAGER.addCommand(
             literal("pagedmessage")

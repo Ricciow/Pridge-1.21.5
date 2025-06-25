@@ -263,6 +263,83 @@
     },
     {
       "type": "regex",
+      "trigger": "^Current: (.+?)\\[(.+?)\\] \\+ (.+?)\\[(.+?)\\]. Next: (.+?)\\[(.+?)\\] \\+ (.+?)\\[(.+?)\\] in (.+?)\\. Next special: (.+?), in (.+?)\\.$",
+      "finalFormat": "\n  &eCurrent Mayors:\n    &e- $1: &f$2\n    &e- $3: &f$4\n\n  &eNext Election in: &f$9\n  &eCandidates:\n    &e- $5: &f$6\n    &e- $7: &f$8\n\n  &eNext Special Mayor: &d&l$10 &ein &f$11",
+      "groupFormatting": {
+        "1": {
+          "Aatrox": "&c&l${str}",
+          "Cole": "&6&l${str}",
+          "Diana": "&b&l${str}",
+          "Diaz": "&e&l${str}",
+          "Finnegan": "&2&l${str}",
+          "Foxy": "&5&l${str}",
+          "Marina": "&3&l${str}",
+          "Paul": "&a&l${str}",
+          "Jerry": "&d&l${str}",
+          "Derpy": "&d&l${str}",
+          "Scorpius": "&d&l${str}",
+          "Unknown": "&8&l${str}"
+        },
+        "3": {
+          "Aatrox": "&c&l${str}",
+          "Cole": "&6&l${str}",
+          "Diana": "&b&l${str}",
+          "Diaz": "&e&l${str}",
+          "Finnegan": "&2&l${str}",
+          "Foxy": "&5&l${str}",
+          "Marina": "&3&l${str}",
+          "Paul": "&a&l${str}",
+          "Jerry": "&d&l${str}",
+          "Derpy": "&d&l${str}",
+          "Scorpius": "&d&l${str}",
+          "Unknown": "&8&l${str}"
+        },
+        "5": {
+          "Aatrox": "&c&l${str}",
+          "Cole": "&6&l${str}",
+          "Diana": "&b&l${str}",
+          "Diaz": "&e&l${str}",
+          "Finnegan": "&2&l${str}",
+          "Foxy": "&5&l${str}",
+          "Marina": "&3&l${str}",
+          "Paul": "&a&l${str}",
+          "Jerry": "&d&l${str}",
+          "Derpy": "&d&l${str}",
+          "Scorpius": "&d&l${str}",
+          "Unknown": "&8&l${str}"
+        },
+        "7": {
+          "Aatrox": "&c&l${str}",
+          "Cole": "&6&l${str}",
+          "Diana": "&b&l${str}",
+          "Diaz": "&e&l${str}",
+          "Finnegan": "&2&l${str}",
+          "Foxy": "&5&l${str}",
+          "Marina": "&3&l${str}",
+          "Paul": "&a&l${str}",
+          "Jerry": "&d&l${str}",
+          "Derpy": "&d&l${str}",
+          "Scorpius": "&d&l${str}",
+          "Unknown": "&8&l${str}"
+        },
+        "10": {
+          "Aatrox": "&c&l${str}",
+          "Cole": "&6&l${str}",
+          "Diana": "&b&l${str}",
+          "Diaz": "&e&l${str}",
+          "Finnegan": "&2&l${str}",
+          "Foxy": "&5&l${str}",
+          "Marina": "&3&l${str}",
+          "Paul": "&a&l${str}",
+          "Jerry": "&d&l${str}",
+          "Derpy": "&d&l${str}",
+          "Scorpius": "&d&l${str}",
+          "Unknown": "&8&l${str}"
+        }
+      }
+    },
+    {
+      "type": "regex",
       "trigger": "^Current: (.+?)\\[(.+?)\\]. Next: (.+?)\\[(.+?)\\] \\+ (.+?)\\[(.+?)\\] in (.+?). Next special: (.+?), in (.+?)\\.$",
       "finalFormat": "\n  &eCurrent Mayor: $1 &e- &f$2\n\n  &eNext Election in: &f$7\n  &eCandidates:\n    &e- $3: &f$4\n    &e- $5: &f$6\n\n  &eNext Special Mayor: &d&l$8 &ein &f$9",
       "groupFormatting": {

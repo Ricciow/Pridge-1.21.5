@@ -264,7 +264,7 @@
     {
       "type": "regex",
       "trigger": "^Current: (.+?)\\[(.+?)\\] \\+ (.+?)\\[(.+?)\\]. Next: (.+?)\\[(.+?)\\] \\+ (.+?)\\[(.+?)\\] in (.+?)\\. Next special: (.+?), in (.+?)\\.$",
-      "finalFormat": "\n  &eCurrent Mayors:\n    &e- $1: &f$2\n    &e- $3: &f$4\n\n  &eNext Election in: &f$9\n  &eCandidates:\n    &e- $5: &f$6\n    &e- $7: &f$8\n\n  &eNext Special Mayor: &d&l${10} &ein &f${11}",
+      "finalFormat": "\n  &eCurrent Mayors:\n    &e- $1: &f$2\n    &e- $3: &f$4\n\n  &eNext Election in: &f$9\n  &eCandidates:\n    &e- $5: &f$6\n    &e- $7: &f$8\n\n  &eNext Special Mayor:&d&l $10 &ein&f $11",
       "groupFormatting": {
         "1": {
           "Aatrox": "&c&l${str}",

@@ -1,39 +1,38 @@
 {
 	"schemaVersion": 1,
 	"id": "pridge",
-	"version": "${version}",
 	"name": "pridge",
-	"description": "This is a formatted for the Shrimple Guild Bridge bot",
+	"version": "${version}",
+	"description": "This is a formatted for the Shrimple/PrawnAcademy Guild Bridge bot",
 	"authors": [
-		"Riccio"
+		"Riccio",
+		"Ilmars112",
+		"appable"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"sources": "https://github.com/Ricciow/Pridge-1.21.5",
+		"homepage": "https://discord.gg/shrimple",
+		"issues": "https://github.com/Ricciow/Pridge-1.21.5/issues"
 	},
-	"license": "MIT",
 	"icon": "assets/pridge/icon.png",
+	"license": "MIT",
 	"environment": "client",
 	"entrypoints": {
 		"client": [
-			"io.github.ricciow.PridgeClient"
+			{
+				"adapter": "kotlin",
+				"value": "io.github.ricciow.Pridge"
+			}
 		]
 	},
 	"mixins": [
-		{
-			"config": "pridge.client.mixins.json",
-			"environment": "client"
-		}
+		"pridge.mixins.json"
 	],
 	"accessWidener": "pridge.accesswidener",
 	"depends": {
 		"fabricloader": ">=0.16.14",
 		"minecraft": "~1.21.5",
-		"java": ">=21",
-		"fabric-api": "*",
-		"fabric-language-kotlin": "*"
-	},
-	"suggests": {
-		"another-mod": "*"
+		"fabric-api": ">=0.128.1+1.21.5",
+		"fabric-language-kotlin": ">=1.13.4+kotlin.2.2.0"
 	}
 }

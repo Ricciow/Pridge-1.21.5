@@ -104,7 +104,7 @@ object SpecialFunctions {
 
         val result = String.format("&eNext %s contest in%s%s%s", crop, hoursStr, minutesStr, secondsStr)
 
-        return FormatResult(originalText, result, discordText = false, botText = true)
+        return FormatResult(result, botText = true)
     }
 
     private fun contest2Handler(originalText: String, matcher: Matcher): FormatResult {
@@ -122,7 +122,7 @@ object SpecialFunctions {
         val secondsStr = timeFunc(seconds, "s")
 
         val result = "\n &a&lActive Contest\n &6$crop1, $crop2, $crop3\n&eNext $nextCrop contest in&f$hoursStr$minutesStr$secondsStr"
-        return FormatResult(originalText, result, discordText = false, botText = true)
+        return FormatResult(result, botText = true)
     }
 
     private fun contest3Handler(originalText: String, matcher: Matcher): FormatResult {
@@ -143,7 +143,7 @@ object SpecialFunctions {
 
         val result = " &a&lActive Contest\n &6$crop1, $crop2, $crop3\n&eNext: \n &6$crop4, $crop5, $crop6\n &eIn&f$hoursStr$minutesStr$secondsStr"
 
-        return FormatResult(originalText, result, discordText = false, botText = true)
+        return FormatResult(result, botText = true)
     }
 
     private fun contest4Handler(originalText: String, matcher: Matcher): FormatResult {
@@ -160,7 +160,7 @@ object SpecialFunctions {
 
         val result = " &e&lNext:\n &6$crop1, $crop2, $crop3\n &eIn&f$hoursStr$minutesStr$secondsStr"
 
-        return FormatResult(originalText, result, discordText = false, botText = true)
+        return FormatResult(result, botText = true)
     }
 
     private fun bestiaryHandler(originalText: String, matcher: Matcher): FormatResult {
@@ -232,7 +232,7 @@ object SpecialFunctions {
 
         return FormatResult(
             pages, titles, TextColor.fromFormatting(Formatting.DARK_AQUA)!!,
-            TextColor.fromFormatting(Formatting.GRAY), prefix, discordText = false, botText = true
+            TextColor.fromFormatting(Formatting.GRAY), prefix, botText = true
         )
     }
 
@@ -246,7 +246,7 @@ object SpecialFunctions {
 
         val result = "&f&l$user (&f&l$profile)&6&l:\n &6&l$mob - &f&l$num&e&l/&f&l0 &e&l($str&e&l)"
 
-        return FormatResult(originalText, result, discordText = false, botText = true)
+        return FormatResult(result, botText = true)
     }
 
     private fun collectionHandler(originalText: String, matcher: Matcher): FormatResult {
@@ -324,7 +324,7 @@ object SpecialFunctions {
         // The return statement is the same.
         return FormatResult(
             pages, titles, TextColor.fromFormatting(Formatting.DARK_AQUA)!!,
-            TextColor.fromFormatting(Formatting.GRAY)!!, prefix, discordText = false, botText = true
+            TextColor.fromFormatting(Formatting.GRAY)!!, prefix, botText = true
         )
     }
 
@@ -378,7 +378,7 @@ object SpecialFunctions {
             finalMessage.append(formattedPart)
         }
 
-        return FormatResult(originalText, finalMessage, discordText = true, botText = false)
+        return FormatResult(finalMessage, discordText = true)
     }
 
     fun interface SpecialFunction {

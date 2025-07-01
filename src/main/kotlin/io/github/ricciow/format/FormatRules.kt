@@ -37,7 +37,7 @@ class RegexFormatRule : FormatRule() {
         if (!matcher.matches()) return null
 
         if (groupFormatting.isEmpty()) {
-            return FormatResult(text, matcher.replaceAll(finalFormat), discordText = false, botText = true)
+            return FormatResult(matcher.replaceAll(finalFormat), botText = true)
         }
 
         var result = finalFormat
@@ -61,7 +61,7 @@ class RegexFormatRule : FormatRule() {
             result = result.replace("$$i", replacementText)
         }
 
-        return FormatResult(text, result, discordText = false, botText = true)
+        return FormatResult(result, botText = true)
     }
 }
 
@@ -75,7 +75,7 @@ class StringFormatRule : FormatRule() {
 
     override fun process(text: String): FormatResult? {
         if (trigger == text) {
-            return FormatResult(text, finalFormat, discordText = false, botText = true)
+            return FormatResult(finalFormat, botText = true)
         }
         return null
     }
@@ -94,7 +94,7 @@ class StringArrayFormatRule : FormatRule() {
 
     override fun process(text: String): FormatResult? {
         if (trigger.contains(text)) {
-            return FormatResult(text, finalFormat.replace($$"${msg}", text), discordText = false, botText = true)
+            return FormatResult(finalFormat.replace($$"${msg}", text), botText = true)
         }
         return null
     }

@@ -8,29 +8,24 @@ import net.minecraft.text.Text
 import net.minecraft.text.TextColor
 
 class FormatResult {
-    lateinit var originalString: String
     private var finalText: Text? = null
     var discordText: Boolean
     var botText: Boolean
 
     private var disableOutput = false
 
-    constructor(originalString: String, finalText: Text, discordText: Boolean, botText: Boolean) {
-        this.originalString = originalString
+    constructor(finalText: Text, discordText: Boolean = false, botText: Boolean = false) {
         this.finalText = finalText
         this.discordText = discordText
         this.botText = botText
     }
 
-    constructor(originalString: String, finalText: String, discordText: Boolean, botText: Boolean)
-            : this(originalString, parse(finalText), discordText, botText)
+    constructor(finalText: String, discordText: Boolean = false, botText: Boolean = false) : this(parse(finalText), discordText, botText)
 
     /**
      * Doesnt modify the message at all
      * @param originalString the original string
      */
-    constructor(originalString: String)
-            : this(originalString, originalString, false, true)
 
     /**
      * Result for a paged message with a singular title
@@ -41,8 +36,8 @@ class FormatResult {
         arrowColor: TextColor,
         disabledArrowColor: TextColor?,
         prefix: Text?,
-        discordText: Boolean,
-        botText: Boolean
+        discordText: Boolean = false,
+        botText: Boolean = false
     ) {
         this.discordText = discordText
         this.botText = botText
@@ -60,14 +55,14 @@ class FormatResult {
     /**
      * Result for a paged message with multiple titles
      */
-    internal constructor(
+    constructor(
         pages: MutableList<Text>,
         title: MutableList<Text>,
         arrowColor: TextColor,
         disabledArrowColor: TextColor?,
         prefix: Text?,
-        discordText: Boolean,
-        botText: Boolean
+        discordText: Boolean = false,
+        botText: Boolean = false
     ) {
         this.discordText = discordText
         this.botText = botText

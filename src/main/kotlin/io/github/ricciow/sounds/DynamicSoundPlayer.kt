@@ -26,6 +26,7 @@ import java.util.*
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 
 class DynamicSoundPlayer(private val soundsDir: Path) {
@@ -42,7 +43,7 @@ class DynamicSoundPlayer(private val soundsDir: Path) {
                         .executes { context ->
                             val argument = StringArgumentType.getString(context, "sound name")
                             if (isSound(argument)) {
-                                play(argument.replace(" ".toRegex(), "_"))
+                                play(argument.replace(" ", "_"))
                                 context.source.sendFeedback(TextParser.parse("&6&lPlaying sound: &e$argument"))
                             } else {
                                 context.source.sendFeedback(TextParser.parse("&c&lSound not found"))
@@ -63,8 +64,7 @@ class DynamicSoundPlayer(private val soundsDir: Path) {
     }
 
     fun play(fileName: String) {
-        val soundFile = soundsDir.resolve("$fileName.ogg")
-        if (!Files.exists(soundFile)) {
+        if (!Files.exists(soundsDir.resolve("$fileName.ogg"))) {
             LOGGER.warn("Attempted to play a dynamic sound that does not exist: {}", fileName)
             return
         }
@@ -131,11 +131,9 @@ class DynamicSoundPlayer(private val soundsDir: Path) {
      * Plays a sound if a string message contains *soundname*
      */
     fun checkForSounds(message: String) {
-        val soundToPlay = getSoundNames().firstOrNull { soundName ->
+        getSoundNames().firstOrNull { soundName ->
             message.contains("*${soundName.replace("_", " ")}*")
-        }
-
-        soundToPlay?.let {
+        }?.let {
             if (CONFIG_I.developerCategory.devEnabled) {
                 LOGGER.info("Played {} sound for the message: {}", it, message)
             }

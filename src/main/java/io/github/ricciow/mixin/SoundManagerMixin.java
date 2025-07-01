@@ -4,6 +4,7 @@ import net.minecraft.client.sound.Sound;
 import net.minecraft.client.sound.SoundManager;
 import net.minecraft.client.sound.WeightedSoundSet;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.floatprovider.ConstantFloatProvider;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,23 +19,20 @@ public class SoundManagerMixin {
 
     @Inject(method = "get", at = @At("HEAD"), cancellable = true)
     private void onGetSound(Identifier id, CallbackInfoReturnable<WeightedSoundSet> cir) {
-        if (id.getNamespace().equals(DYNAMIC_SOUND_NAMESPACE)) {
-            // --- FIX 1: Use FloatSupplier for volume and pitch ---
-            Sound sound = new Sound(
-                    id,
-                    (random) -> 1.0f,
-                    (random) -> 1.0f,
-                    1,
-                    Sound.RegistrationType.FILE,
-                    false,
-                    false,
-                    16
-            );
+        if (!id.getNamespace().equals(DYNAMIC_SOUND_NAMESPACE)) return;
 
-            WeightedSoundSet soundSet = new WeightedSoundSet(id, null);
-            soundSet.add(sound);
+        WeightedSoundSet soundSet = new WeightedSoundSet(id, null);
+        soundSet.add(new Sound(
+                id,
+                ConstantFloatProvider.create(1.0F),
+                ConstantFloatProvider.create(1.0F),
+                1,
+                Sound.RegistrationType.FILE,
+                false,
+                false,
+                16
+        ));
 
-            cir.setReturnValue(soundSet);
-        }
+        cir.setReturnValue(soundSet);
     }
 }

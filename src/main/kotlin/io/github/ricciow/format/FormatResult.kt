@@ -84,7 +84,6 @@ class FormatResult {
 
 
     fun getPrefix(): MutableText {
-
         val prefix = StringBuilder(CONFIG_I.guildCategory.name)
 
         if (botText) {

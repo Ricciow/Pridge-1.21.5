@@ -2,8 +2,8 @@ package io.github.ricciow.format
 
 import io.github.ricciow.Pridge.Companion.CONFIG_I
 import io.github.ricciow.util.ColorCode
-import io.github.ricciow.util.STuF
 import io.github.ricciow.util.TextParser.parse
+import io.github.ricciow.util.UrlFormatter
 import net.minecraft.text.ClickEvent.OpenUrl
 import net.minecraft.text.Style
 import net.minecraft.text.Text
@@ -83,8 +83,7 @@ object SpecialFunctions {
             return parse(CONFIG_I.linkCategory.representation).apply {
                 style = Style.EMPTY.withClickEvent(
                     OpenUrl(
-                        URI(STuF.decode(matcher.group(1))
-                        )
+                        URI(UrlFormatter.decode(matcher.group(1)))
                     )
                 )
             }
@@ -105,7 +104,7 @@ object SpecialFunctions {
 
         val result = String.format("&eNext %s contest in%s%s%s", crop, hoursStr, minutesStr, secondsStr)
 
-        return FormatResult(originalText, result, false, true)
+        return FormatResult(originalText, result, discordText = false, botText = true)
     }
 
     private fun contest2Handler(originalText: String, matcher: Matcher): FormatResult {
@@ -123,7 +122,7 @@ object SpecialFunctions {
         val secondsStr = timeFunc(seconds, "s")
 
         val result = "\n &a&lActive Contest\n &6$crop1, $crop2, $crop3\n&eNext $nextCrop contest in&f$hoursStr$minutesStr$secondsStr"
-        return FormatResult(originalText, result, false, true)
+        return FormatResult(originalText, result, discordText = false, botText = true)
     }
 
     private fun contest3Handler(originalText: String, matcher: Matcher): FormatResult {
@@ -144,7 +143,7 @@ object SpecialFunctions {
 
         val result = " &a&lActive Contest\n &6$crop1, $crop2, $crop3\n&eNext: \n &6$crop4, $crop5, $crop6\n &eIn&f$hoursStr$minutesStr$secondsStr"
 
-        return FormatResult(originalText, result, false, true)
+        return FormatResult(originalText, result, discordText = false, botText = true)
     }
 
     private fun contest4Handler(originalText: String, matcher: Matcher): FormatResult {
@@ -161,7 +160,7 @@ object SpecialFunctions {
 
         val result = " &e&lNext:\n &6$crop1, $crop2, $crop3\n &eIn&f$hoursStr$minutesStr$secondsStr"
 
-        return FormatResult(originalText, result, false, true)
+        return FormatResult(originalText, result, discordText = false, botText = true)
     }
 
     private fun bestiaryHandler(originalText: String, matcher: Matcher): FormatResult {
@@ -306,7 +305,7 @@ object SpecialFunctions {
         }
 
         // This logic for handling the final page remains the same.
-        if (currentPageContent.length > 0) {
+        if (currentPageContent.isNotEmpty()) {
             if (!pages.isEmpty()) {
                 while (entriesOnPage < maxPerPage) {
                     currentPageContent.append("\n")

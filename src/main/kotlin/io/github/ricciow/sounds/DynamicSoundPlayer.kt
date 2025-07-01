@@ -26,6 +26,7 @@ import kotlin.io.path.nameWithoutExtension
 
 object DynamicSoundPlayer {
     private val soundsDir = CONFIG_DIR.resolve("sounds")
+
     init {
         //Create sounds directory if it doesn't exist
         loadFromDefaultAsset()
@@ -33,19 +34,19 @@ object DynamicSoundPlayer {
         //Create sounds command
         CommandManager.addCommand(
             literal("pridgesounds").then(
-                    argument("sound name", StringArgumentType.greedyString())
-                        .suggests(StringListSuggestionProvider(getSoundNames()))
-                        .executes { context ->
-                            val argument = StringArgumentType.getString(context, "sound name")
-                            if (isSound(argument)) {
-                                play(argument.replace(" ", "_"))
-                                context.source.sendFeedback(TextParser.parse("&6&lPlaying sound: &e$argument"))
-                            } else {
-                                context.source.sendFeedback(TextParser.parse("&c&lSound not found"))
-                            }
-                            Command.SINGLE_SUCCESS
+                argument("sound name", StringArgumentType.greedyString())
+                    .suggests(StringListSuggestionProvider(getSoundNames()))
+                    .executes { context ->
+                        val argument = StringArgumentType.getString(context, "sound name")
+                        if (isSound(argument)) {
+                            play(argument.replace(" ", "_"))
+                            context.source.sendFeedback(TextParser.parse("&6&lPlaying sound: &e$argument"))
+                        } else {
+                            context.source.sendFeedback(TextParser.parse("&c&lSound not found"))
                         }
-                )
+                        Command.SINGLE_SUCCESS
+                    }
+            )
                 .executes { context ->
                     val builder = StringBuilder("&6&lAvailable Sounds: &e")
                     builder.append(getSoundNames().joinToString("&f, &e") { name ->

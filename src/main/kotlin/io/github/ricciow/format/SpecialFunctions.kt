@@ -121,7 +121,8 @@ object SpecialFunctions {
         val minutesStr = timeFunc(minutes, "m")
         val secondsStr = timeFunc(seconds, "s")
 
-        val result = "\n &a&lActive Contest\n &6$crop1, $crop2, $crop3\n&eNext $nextCrop contest in&f$hoursStr$minutesStr$secondsStr"
+        val result =
+            "\n &a&lActive Contest\n &6$crop1, $crop2, $crop3\n&eNext $nextCrop contest in&f$hoursStr$minutesStr$secondsStr"
         return FormatResult(result, botText = true)
     }
 
@@ -141,7 +142,8 @@ object SpecialFunctions {
         val minutesStr = timeFunc(minutes, "m")
         val secondsStr = timeFunc(seconds, "s")
 
-        val result = " &a&lActive Contest\n &6$crop1, $crop2, $crop3\n&eNext: \n &6$crop4, $crop5, $crop6\n &eIn&f$hoursStr$minutesStr$secondsStr"
+        val result =
+            " &a&lActive Contest\n &6$crop1, $crop2, $crop3\n&eNext: \n &6$crop4, $crop5, $crop6\n &eIn&f$hoursStr$minutesStr$secondsStr"
 
         return FormatResult(result, botText = true)
     }

@@ -171,7 +171,8 @@ class ImagePreviewRenderer {
 
         val handle = mc.window.handle
         if (InputUtil.isKeyPressed(handle, GLFW.GLFW_KEY_LEFT_SHIFT) &&
-            InputUtil.isKeyPressed(handle, GLFW.GLFW_KEY_LEFT_CONTROL)) {
+            InputUtil.isKeyPressed(handle, GLFW.GLFW_KEY_LEFT_CONTROL)
+        ) {
             desiredWidth = screenWidth * 0.75f
         } else {
             if (InputUtil.isKeyPressed(handle, GLFW.GLFW_KEY_LEFT_SHIFT)) {
@@ -202,7 +203,8 @@ class ImagePreviewRenderer {
     }
 
     companion object {
-        private val OGP_IMAGE_REGEX = Pattern.compile("<meta property=\"(?:og:image|twitter:image)\" content=\"(?<url>.+?)\".*?/?>")
+        private val OGP_IMAGE_REGEX =
+            Pattern.compile("<meta property=\"(?:og:image|twitter:image)\" content=\"(?<url>.+?)\".*?/?>")
         private val IMG_TAG_REGEX = Pattern.compile("<img.*?src=\"(?<url>.+?)\".*?>")
         private val PREVIEW_TEXTURE_ID = Identifier.of("image_preview", "preview_texture")
     }

@@ -1,9 +1,7 @@
 package io.github.ricciow.format
 
 import io.github.ricciow.Pridge.Companion.LOGGER
-import net.minecraft.client.data.TextureMap.pattern
 import java.util.regex.Pattern
-import kotlin.run
 
 abstract class FormatRule {
     abstract fun process(text: String): FormatResult?

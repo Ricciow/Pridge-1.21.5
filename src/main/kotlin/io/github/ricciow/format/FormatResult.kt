@@ -20,7 +20,11 @@ class FormatResult {
         this.botText = botText
     }
 
-    constructor(finalText: String, discordText: Boolean = false, botText: Boolean = false) : this(parse(finalText), discordText, botText)
+    constructor(finalText: String, discordText: Boolean = false, botText: Boolean = false) : this(
+        parse(finalText),
+        discordText,
+        botText
+    )
 
     /**
      * Doesnt modify the message at all

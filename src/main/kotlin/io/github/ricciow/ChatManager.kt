@@ -183,7 +183,11 @@ object ChatManager {
             val colorCode = if (matcher.group(2) == "left") ColorCode.RED else ColorCode.GREEN
             sendMessage(
                 parse(
-                    "$guildTag ${ColorCode.GOLD.getMcCode()}${originalMessage.string.split(" ")[2]} ${colorCode.getMcCode()}${matcher.group(2)}"
+                    "$guildTag ${ColorCode.GOLD.getMcCode()}${originalMessage.string.split(" ")[2]} ${colorCode.getMcCode()}${
+                        matcher.group(
+                            2
+                        )
+                    }"
                 )
             )
             return false

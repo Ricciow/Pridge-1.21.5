@@ -11,6 +11,6 @@ object UrlContentFetcher {
      * @return The content of the URL as a String.
      */
     fun fetchContentFromURL(urlString: String): String {
-       return URI(urlString).toURL().readText(StandardCharsets.UTF_8)
+        return URI(urlString).toURL().readText(StandardCharsets.UTF_8)
     }
 }

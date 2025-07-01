@@ -25,6 +25,8 @@ public abstract class ChatHudMixin implements IdentifiableChatHud {
     @Final
     @Shadow
     private MinecraftClient client;
+    @Shadow
+    private int scrolledLines;
 
     @Shadow
     private void refresh() {
@@ -37,9 +39,6 @@ public abstract class ChatHudMixin implements IdentifiableChatHud {
     @Shadow
     private void logChatMessage(ChatHudLine message) {
     }
-
-    @Shadow
-    private int scrolledLines;
 
     public void pridge$addIdentifiableMessage(@NotNull String id, @NotNull Text message) {
         addMessage(message);

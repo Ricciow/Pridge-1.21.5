@@ -29,7 +29,7 @@ class BotCategory {
 
     fun getLineCount(): Int {
         if (lineCount == 0) {
-           return 16384
+            return 16384
         }
         return lineCount
     }

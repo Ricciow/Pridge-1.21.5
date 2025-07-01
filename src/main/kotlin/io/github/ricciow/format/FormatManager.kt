@@ -1,6 +1,5 @@
 package io.github.ricciow.format
 
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonSyntaxException
 import com.mojang.brigadier.Command
@@ -21,7 +20,6 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.net.URISyntaxException
 import java.nio.file.Files
-import kotlin.jvm.java
 
 object FormatManager {
     private val configFile = CONFIG_DIR.resolve(MOD_ID).resolve("formats.json")
@@ -29,16 +27,19 @@ object FormatManager {
     private var lastReloadType = "default"
 
     private val GSON = GsonBuilder()
-        .registerTypeAdapterFactory(RuntimeTypeAdapterFactory
-            .of(FormatRule::class.java, "type")
-            .registerSubtype(RegexFormatRule::class.java, "regex")
-            .registerSubtype(StringFormatRule::class.java, "string")
-            .registerSubtype(StringArrayFormatRule::class.java, "stringarray")
-            .registerSubtype(SpecialFormatRule::class.java, "special"))
+        .registerTypeAdapterFactory(
+            RuntimeTypeAdapterFactory
+                .of(FormatRule::class.java, "type")
+                .registerSubtype(RegexFormatRule::class.java, "regex")
+                .registerSubtype(StringFormatRule::class.java, "string")
+                .registerSubtype(StringArrayFormatRule::class.java, "stringarray")
+                .registerSubtype(SpecialFormatRule::class.java, "special")
+        )
         .setPrettyPrinting()
         .disableHtmlEscaping()
         .create()
-    private const val FORMAT_URL = "https://raw.githubusercontent.com/Ricciow/Pridge-1.21.5/master/src/main/resources/assets/pridge/formats_default.json"
+    private const val FORMAT_URL =
+        "https://raw.githubusercontent.com/Ricciow/Pridge-1.21.5/master/src/main/resources/assets/pridge/formats_default.json"
 
     init {
         load()

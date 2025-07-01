@@ -38,7 +38,8 @@ object PagedMessageFactory {
     fun initialize() {
         CommandManager.addCommand(
             literal("pagedmessage")
-                .then(argument("direction", StringArgumentType.word())
+                .then(
+                    argument("direction", StringArgumentType.word())
                         .executes { commandContext ->
                             if (lastPagedMessage != null) {
                                 if (StringArgumentType.getString(commandContext, "direction") == "left") {

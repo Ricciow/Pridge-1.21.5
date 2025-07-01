@@ -20,6 +20,7 @@ package io.github.ricciow.util;
 import java.util.ArrayList;
 import java.util.List;
 
+//TODO: Create our own message serializer-deserializer for links
 public class STuF {
 
     // The specific character set used for encoding and decoding.

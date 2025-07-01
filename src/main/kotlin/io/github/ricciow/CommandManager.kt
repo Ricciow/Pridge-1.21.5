@@ -14,8 +14,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
  * Manages the registration of client-side commands.
  * Commands are added to a list and then registered all at once.
  */
-class CommandManager {
-
+object CommandManager {
     private val commands = mutableListOf<LiteralArgumentBuilder<FabricClientCommandSource>>()
 
     fun addCommand(command: LiteralArgumentBuilder<FabricClientCommandSource>) {

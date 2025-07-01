@@ -2,10 +2,10 @@ package io.github.ricciow
 
 import io.github.ricciow.Pridge.Companion.CONFIG_I
 import io.github.ricciow.Pridge.Companion.LOGGER
-import io.github.ricciow.Pridge.Companion.SOUND_PLAYER
 import io.github.ricciow.Pridge.Companion.mc
 import io.github.ricciow.format.FormatManager
 import io.github.ricciow.format.FormatResult
+import io.github.ricciow.sounds.DynamicSoundPlayer
 import io.github.ricciow.util.ColorCode
 import io.github.ricciow.util.TextParser.parse
 import io.github.ricciow.util.TextParser.parseHoverable
@@ -16,9 +16,13 @@ import net.minecraft.util.Formatting
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-class ChatManager(private val formatManager: FormatManager) {
+object ChatManager {
+    private val GUILD_CHAT_PATTERN: Pattern = Pattern.compile("^Guild > (.*?): (.*)$")
+    private val STATUS_CHAT_PATTERN: Pattern = Pattern.compile("^Guild > (.*?) (joined|left)\\.$")
+    private val PRIVATE_CHAT_PATTERN: Pattern = Pattern.compile("^From (.*?): (.*)$")
+
     private var incompleteMessage = ""
-    private val splitChar = "➩"
+    private const val SPLIT_CHAR = "➩"
 
     lateinit var chatHud: ChatHud
 
@@ -70,7 +74,7 @@ class ChatManager(private val formatManager: FormatManager) {
 
                 //Sound Player
                 if (CONFIG_I.soundsCategory.enabled) {
-                    SOUND_PLAYER.checkForSounds(cleanRawMessage)
+                    DynamicSoundPlayer.playSoundIfMessageContains(cleanRawMessage)
                 }
 
                 //Guild Chat Message handling
@@ -121,8 +125,8 @@ class ChatManager(private val formatManager: FormatManager) {
     }
 
     private fun onReceiveBotMessage(originalMessage: Text, userInfo: String, chatContent: String): Boolean {
-        val startsWithSplit = chatContent.startsWith(splitChar)
-        val endsWithSplit = chatContent.endsWith(splitChar)
+        val startsWithSplit = chatContent.startsWith(SPLIT_CHAR)
+        val endsWithSplit = chatContent.endsWith(SPLIT_CHAR)
         val isBuffering = !incompleteMessage.isEmpty()
 
         var finalContent: String
@@ -156,7 +160,7 @@ class ChatManager(private val formatManager: FormatManager) {
             }
         }
 
-        val formattedContent = formatManager.formatText(finalContent)
+        val formattedContent = FormatManager.formatText(finalContent)
         if (CONFIG_I.developerCategory.devEnabled) {
             LOGGER.info("Message was formatted to: {}", formattedContent)
         }
@@ -206,11 +210,5 @@ class ChatManager(private val formatManager: FormatManager) {
             }
         }
         return true
-    }
-
-    companion object {
-        private val GUILD_CHAT_PATTERN: Pattern = Pattern.compile("^Guild > (.*?): (.*)$")
-        private val STATUS_CHAT_PATTERN: Pattern = Pattern.compile("^Guild > (.*?) (joined|left)\\.$")
-        private val PRIVATE_CHAT_PATTERN: Pattern = Pattern.compile("^From (.*?): (.*)$")
     }
 }

@@ -1,7 +1,7 @@
 package io.github.ricciow.util.message
 
 import com.mojang.brigadier.arguments.StringArgumentType
-import io.github.ricciow.Pridge.Companion.COMMAND_MANAGER
+import io.github.ricciow.CommandManager
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal
 import net.minecraft.text.Text
@@ -36,7 +36,7 @@ object PagedMessageFactory {
     }
 
     fun initialize() {
-        COMMAND_MANAGER.addCommand(
+        CommandManager.addCommand(
             literal("pagedmessage")
                 .then(argument("direction", StringArgumentType.word())
                         .executes { commandContext ->

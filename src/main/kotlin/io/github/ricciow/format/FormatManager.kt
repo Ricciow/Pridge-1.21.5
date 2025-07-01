@@ -5,33 +5,45 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonSyntaxException
 import com.mojang.brigadier.Command
 import com.mojang.brigadier.arguments.StringArgumentType
+import io.github.ricciow.CommandManager
 import io.github.ricciow.Pridge
 import io.github.ricciow.Pridge.Companion.CONFIG_DIR
 import io.github.ricciow.Pridge.Companion.CONFIG_I
+import io.github.ricciow.Pridge.Companion.LOGGER
 import io.github.ricciow.Pridge.Companion.MOD_ID
 import io.github.ricciow.StringListSuggestionProvider
 import io.github.ricciow.util.TextParser.parse
 import io.github.ricciow.util.UrlContentFetcher
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
-import org.slf4j.Logger
 import java.io.FileReader
 import java.io.FileWriter
 import java.io.IOException
 import java.io.InputStreamReader
 import java.net.URISyntaxException
 import java.nio.file.Files
-import java.util.*
 import kotlin.jvm.java
 
-class FormatManager(modId: String) {
-    private val configFile = CONFIG_DIR.resolve(modId).resolve("formats.json")
+object FormatManager {
+    private val configFile = CONFIG_DIR.resolve(MOD_ID).resolve("formats.json")
     var config: ChatFormat? = null
     private var lastReloadType = "default"
+
+    private val GSON = GsonBuilder()
+        .registerTypeAdapterFactory(RuntimeTypeAdapterFactory
+            .of(FormatRule::class.java, "type")
+            .registerSubtype(RegexFormatRule::class.java, "regex")
+            .registerSubtype(StringFormatRule::class.java, "string")
+            .registerSubtype(StringArrayFormatRule::class.java, "stringarray")
+            .registerSubtype(SpecialFormatRule::class.java, "special"))
+        .setPrettyPrinting()
+        .disableHtmlEscaping()
+        .create()
+    private const val FORMAT_URL = "https://raw.githubusercontent.com/Ricciow/Pridge-1.21.5/master/src/main/resources/assets/pridge/formats_default.json"
 
     init {
         load()
 
-        Pridge.COMMAND_MANAGER.addCommand(
+        CommandManager.addCommand(
             ClientCommandManager.literal("reloadprigeformattings")
                 .then(
                     ClientCommandManager.argument<String?>("type", StringArgumentType.word())
@@ -225,26 +237,5 @@ class FormatManager(modId: String) {
         // If we get here, it means the loop finished and no rule returned a non-null result.
         // In this case, we return the original text as the fallback.
         return FormatResult(inputText)
-    }
-
-    companion object {
-        private val LOGGER: Logger = Pridge.LOGGER
-        private val GSON: Gson
-        private const val FORMAT_URL = "https://raw.githubusercontent.com/Ricciow/Pridge-1.21.5/master/src/main/resources/assets/pridge/formats_default.json"
-
-        init {
-            val ruleAdapterFactory = RuntimeTypeAdapterFactory
-                .of(FormatRule::class.java, "type")
-                .registerSubtype(RegexFormatRule::class.java, "regex")
-                .registerSubtype(StringFormatRule::class.java, "string")
-                .registerSubtype(StringArrayFormatRule::class.java, "stringarray")
-                .registerSubtype(SpecialFormatRule::class.java, "special")
-
-            GSON = GsonBuilder()
-                .registerTypeAdapterFactory(ruleAdapterFactory)
-                .setPrettyPrinting()
-                .disableHtmlEscaping()
-                .create()
-        }
     }
 }

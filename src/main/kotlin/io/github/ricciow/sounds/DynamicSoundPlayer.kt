@@ -2,7 +2,8 @@ package io.github.ricciow.sounds
 
 import com.mojang.brigadier.Command
 import com.mojang.brigadier.arguments.StringArgumentType
-import io.github.ricciow.Pridge.Companion.COMMAND_MANAGER
+import io.github.ricciow.CommandManager
+import io.github.ricciow.Pridge.Companion.CONFIG_DIR
 import io.github.ricciow.Pridge.Companion.CONFIG_I
 import io.github.ricciow.Pridge.Companion.MOD_ID
 import io.github.ricciow.Pridge.Companion.mc
@@ -11,32 +12,26 @@ import io.github.ricciow.util.TextParser
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.client.MinecraftClient
 import net.minecraft.client.realms.RealmsError.LOGGER
 import net.minecraft.client.sound.PositionedSoundInstance
-import net.minecraft.client.sound.SoundInstance
-import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvent
 import net.minecraft.util.Identifier
 import java.io.IOException
 import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.StandardCopyOption
-import java.util.*
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
-import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 
-class DynamicSoundPlayer(private val soundsDir: Path) {
-
+object DynamicSoundPlayer {
+    private val soundsDir = CONFIG_DIR.resolve("sounds")
     init {
         //Create sounds directory if it doesn't exist
         loadFromDefaultAsset()
 
         //Create sounds command
-        COMMAND_MANAGER.addCommand(
+        CommandManager.addCommand(
             literal("pridgesounds").then(
                     argument("sound name", StringArgumentType.greedyString())
                         .suggests(StringListSuggestionProvider(getSoundNames()))
@@ -130,7 +125,7 @@ class DynamicSoundPlayer(private val soundsDir: Path) {
     /**
      * Plays a sound if a string message contains *soundname*
      */
-    fun checkForSounds(message: String) {
+    fun playSoundIfMessageContains(message: String) {
         getSoundNames().firstOrNull { soundName ->
             message.contains("*${soundName.replace("_", " ")}*")
         }?.let {

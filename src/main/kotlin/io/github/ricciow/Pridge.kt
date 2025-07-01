@@ -4,9 +4,7 @@ import com.mojang.brigadier.Command
 import io.github.notenoughupdates.moulconfig.common.IMinecraft
 import io.github.notenoughupdates.moulconfig.managed.ManagedConfig
 import io.github.ricciow.config.PridgeConfig
-import io.github.ricciow.format.FormatManager
 import io.github.ricciow.rendering.ImagePreviewRenderer
-import io.github.ricciow.sounds.DynamicSoundPlayer
 import io.github.ricciow.util.message.PagedMessageFactory
 import kotlinx.io.IOException
 import net.fabricmc.api.ClientModInitializer
@@ -33,12 +31,7 @@ class Pridge : ClientModInitializer {
 
         PagedMessageFactory.initialize()
 
-        SOUND_PLAYER = DynamicSoundPlayer(CONFIG_DIR.resolve("sounds"))
-
-        FORMATS = FormatManager(MOD_ID)
-
-        CHAT_MANAGER = ChatManager(FORMATS)
-        CHAT_MANAGER.register()
+        ChatManager.register()
 
         try {
             Files.createDirectories(CONFIG_DIR.resolve("sounds"))
@@ -53,7 +46,7 @@ class Pridge : ClientModInitializer {
             layeredDrawer.attachLayerAfter(IdentifiedLayer.CHAT, imagePreviewLayer, imagePreviewRenderer::onHudRender)
         }
 
-        COMMAND_MANAGER.register()
+        CommandManager.register()
 
         LOGGER.info("[Pridge] Initialized successfully!")
     }
@@ -64,7 +57,7 @@ class Pridge : ClientModInitializer {
 
         CONFIG = ManagedConfig.create(configFile, PridgeConfig::class.java)
 
-        COMMAND_MANAGER.addCommand(
+        CommandManager.addCommand(
             literal("pridge").executes { context ->
                 mc.send { IMinecraft.instance.openWrappedScreen(CONFIG.getEditor()) }
                 Command.SINGLE_SUCCESS
@@ -90,15 +83,12 @@ class Pridge : ClientModInitializer {
         const val MOD_ID = "pridge"
         val LOGGER: Logger = LoggerFactory.getLogger(MOD_ID)
         val CONFIG_DIR: Path = FabricLoader.getInstance().configDir.resolve(MOD_ID)
-        val COMMAND_MANAGER = CommandManager()
+
         val mc: MinecraftClient
             get() = MinecraftClient.getInstance()
 
-        lateinit var FORMATS: FormatManager
-        lateinit var CHAT_MANAGER: ChatManager
         lateinit var CONFIG: ManagedConfig<PridgeConfig>
         val CONFIG_I: PridgeConfig
             get() = CONFIG.instance // since instance is mutable, we cant just have it as a variable
-        lateinit var SOUND_PLAYER: DynamicSoundPlayer
     }
 }

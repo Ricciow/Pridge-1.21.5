@@ -4,6 +4,7 @@ import com.mojang.brigadier.Command
 import io.github.notenoughupdates.moulconfig.common.IMinecraft
 import io.github.notenoughupdates.moulconfig.managed.ManagedConfig
 import io.github.ricciow.config.PridgeConfig
+import io.github.ricciow.format.FormatManager
 import io.github.ricciow.rendering.ImagePreviewRenderer
 import io.github.ricciow.util.message.PagedMessageFactory
 import kotlinx.io.IOException
@@ -30,6 +31,8 @@ class Pridge : ClientModInitializer {
         initializeConfig()
 
         PagedMessageFactory.initialize()
+
+        FormatManager.initialize()
 
         ChatManager.register()
 

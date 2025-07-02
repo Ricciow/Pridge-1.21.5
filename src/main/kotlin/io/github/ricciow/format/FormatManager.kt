@@ -38,10 +38,8 @@ object FormatManager {
         .setPrettyPrinting()
         .disableHtmlEscaping()
         .create()
-    private const val FORMAT_URL =
-        "https://raw.githubusercontent.com/Ricciow/Pridge-1.21.5/master/src/main/resources/assets/pridge/formats_default.json"
 
-    init {
+    fun initialize() {
         load()
 
         CommandManager.addCommand(
@@ -181,7 +179,7 @@ object FormatManager {
     }
 
     private fun loadFromGithub() {
-        val format = UrlContentFetcher.fetchContentFromURL(FORMAT_URL)
+        val format = UrlContentFetcher.fetchContentFromURL(CONFIG_I.developerCategory.formatURL)
         this.config = GSON.fromJson(format, ChatFormat::class.java)
     }
 

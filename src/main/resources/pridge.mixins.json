@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "io.github.ricciow.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "ChatHudLineMixin",
+    "ChatHudMixin",
+    "SoundLoaderMixin",
+    "SoundManagerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

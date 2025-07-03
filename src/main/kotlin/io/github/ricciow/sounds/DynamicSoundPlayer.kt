@@ -1,16 +1,9 @@
 package io.github.ricciow.sounds
 
-import com.mojang.brigadier.Command
-import com.mojang.brigadier.arguments.StringArgumentType
-import io.github.ricciow.CommandManager
 import io.github.ricciow.Pridge.Companion.CONFIG_DIR
 import io.github.ricciow.Pridge.Companion.CONFIG_I
 import io.github.ricciow.Pridge.Companion.MOD_ID
 import io.github.ricciow.Pridge.Companion.mc
-import io.github.ricciow.StringListSuggestionProvider
-import io.github.ricciow.util.TextParser
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.realms.RealmsError.LOGGER
 import net.minecraft.client.sound.PositionedSoundInstance
@@ -27,36 +20,9 @@ import kotlin.io.path.nameWithoutExtension
 object DynamicSoundPlayer {
     private val soundsDir = CONFIG_DIR.resolve("sounds")
 
-    init {
+    fun initialize() {
         //Create sounds directory if it doesn't exist
         loadFromDefaultAsset()
-
-        //Create sounds command
-        CommandManager.addCommand(
-            literal("pridgesounds").then(
-                argument("sound name", StringArgumentType.greedyString())
-                    .suggests(StringListSuggestionProvider(getSoundNames()))
-                    .executes { context ->
-                        val argument = StringArgumentType.getString(context, "sound name")
-                        if (isSound(argument)) {
-                            play(argument.replace(" ", "_"))
-                            context.source.sendFeedback(TextParser.parse("&6&lPlaying sound: &e$argument"))
-                        } else {
-                            context.source.sendFeedback(TextParser.parse("&c&lSound not found"))
-                        }
-                        Command.SINGLE_SUCCESS
-                    }
-            )
-                .executes { context ->
-                    val builder = StringBuilder("&6&lAvailable Sounds: &e")
-                    builder.append(getSoundNames().joinToString("&f, &e") { name ->
-                        name.replace("_", " ")
-                    })
-
-                    context.source.sendFeedback(TextParser.parse(builder.toString()))
-                    Command.SINGLE_SUCCESS
-                }
-        )
     }
 
     fun play(fileName: String) {

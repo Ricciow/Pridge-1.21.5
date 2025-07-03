@@ -1,19 +1,14 @@
 package io.github.ricciow.format
 
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonIOException
 import com.google.gson.JsonSyntaxException
-import com.mojang.brigadier.Command
-import com.mojang.brigadier.arguments.StringArgumentType
-import io.github.ricciow.CommandManager
 import io.github.ricciow.Pridge
 import io.github.ricciow.Pridge.Companion.CONFIG_DIR
 import io.github.ricciow.Pridge.Companion.CONFIG_I
 import io.github.ricciow.Pridge.Companion.LOGGER
 import io.github.ricciow.Pridge.Companion.MOD_ID
-import io.github.ricciow.StringListSuggestionProvider
-import io.github.ricciow.util.TextParser.parse
 import io.github.ricciow.util.UrlContentFetcher
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import java.io.FileReader
 import java.io.FileWriter
 import java.io.IOException
@@ -39,55 +34,6 @@ object FormatManager {
         .disableHtmlEscaping()
         .create()
 
-    fun initialize() {
-        load()
-
-        CommandManager.addCommand(
-            ClientCommandManager.literal("reloadprigeformattings")
-                .then(
-                    ClientCommandManager.argument<String?>("type", StringArgumentType.word())
-                        .suggests(
-                            StringListSuggestionProvider(
-                                mutableListOf(
-                                    "assets",
-                                    "github",
-                                    "config",
-                                    "default"
-                                )
-                            )
-                        )
-                        .executes { context ->
-                            var reloadType = StringArgumentType.getString(context, "type").lowercase()
-                            when (reloadType) {
-                                "assets" -> loadFromDefaultAssetAndSave()
-                                "github" -> loadFromGithubAndSave()
-                                "config" -> loadFromConfig()
-                                else -> {
-                                    reloadType = "default"
-                                    load()
-                                }
-                            }
-
-                            lastReloadType = reloadType
-                            context.getSource().sendFeedback(parse("&a&lReloaded Formattings with $reloadType"))
-                            Command.SINGLE_SUCCESS
-                        }
-                )
-                .executes { context ->
-                    when (lastReloadType) {
-                        "assets" -> loadFromDefaultAssetAndSave()
-                        "github" -> loadFromGithubAndSave()
-                        "config" -> loadFromConfig()
-                        else -> {
-                            load()
-                        }
-                    }
-                    context.getSource().sendFeedback(parse("&a&lReloaded Formattings with $lastReloadType"))
-                    Command.SINGLE_SUCCESS
-                }
-        )
-    }
-
     fun loadFromGithubAndSave() {
         try {
             loadFromGithub()
@@ -107,7 +53,7 @@ object FormatManager {
         }
     }
 
-    fun loadFromConfig() {
+    fun loadFromConfigAndSave() {
         if (Files.exists(configFile)) {
             try {
                 FileReader(configFile.toFile()).use { reader ->
@@ -138,12 +84,12 @@ object FormatManager {
         }
     }
 
-    fun load() {
+    fun initialize() {
         if (CONFIG_I.developerCategory.autoUpdate) {
             loadFromGithubAndSave()
             return
         }
-        loadFromConfig()
+        loadFromConfigAndSave()
     }
 
     fun save() {
@@ -161,7 +107,7 @@ object FormatManager {
     /**
      * Loads the default config from the bundled assets, sets it as the current config, and saves it.
      */
-    private fun loadFromDefaultAssetAndSave() {
+    fun loadFromDefaultAssetAndSave() {
         try {
             loadFromDefaultAsset()
             save()
@@ -178,26 +124,37 @@ object FormatManager {
         }
     }
 
-    private fun loadFromGithub() {
+    fun loadFromGithub() {
         val format = UrlContentFetcher.fetchContentFromURL(CONFIG_I.developerCategory.formatURL)
-        this.config = GSON.fromJson(format, ChatFormat::class.java)
+        this.config = if (format == null) {
+            LOGGER.error("Failed to load format from GitHub. The URL may be incorrect or the content is not accessible.")
+            null
+        } else {
+            GSON.fromJson(format, ChatFormat::class.java)
+        }
     }
 
     /**
      * Reads the default format file from the mod's assets and parses it.
      * @throws IOException If the asset file cannot be found or read.
      */
-    @Throws(IOException::class)
-    private fun loadFromDefaultAsset() {
+    fun loadFromDefaultAsset() {
         // Construct the path to the file inside the JAR
-        val assetPath = "assets/${MOD_ID}/formats_default.json"
+        val assetPath = "assets/$MOD_ID/formats_default.json"
 
         Pridge::class.java.getClassLoader().getResourceAsStream(assetPath).use { stream ->
-            if (stream == null) {
-                throw IOException("Default format asset not found at: $assetPath")
-            }
-            InputStreamReader(stream).use { reader ->
-                this.config = GSON.fromJson(reader, ChatFormat::class.java)
+            this.config = if (stream == null) {
+                LOGGER.error("Default format asset not found at path: {}", assetPath)
+                ChatFormat()
+            } else {
+                try {
+                    InputStreamReader(stream).use { reader ->
+                        GSON.fromJson(reader, ChatFormat::class.java)
+                    }
+                } catch (e: Exception) {
+                    LOGGER.error("Failed to read default format asset from path: {}", assetPath, e)
+                    ChatFormat()
+                }
             }
         }
     }
@@ -212,19 +169,8 @@ object FormatManager {
      * @return The formatted text, or the original text if no rule matched.
      */
     fun formatText(inputText: String): FormatResult {
-        // Safety check to ensure the format has been loaded.
-        if (config == null || config!!.formats.isEmpty()) {
-            LOGGER.warn("Formatting is not loaded, cannot format text.")
-            return FormatResult(inputText)
-        }
-
-        // Loop through every rule in the order they appear in the JSON file.
         for (rule in config!!.formats) {
-            // Ask the current rule to process the text.
-            val result: FormatResult? = rule.process(inputText)
-
-            // The contract of our process() method is to return null if there's no match.
-            // So, if the result is NOT null, we have found our match!
+            val result = rule.process(inputText)
             if (result != null) {
                 if (CONFIG_I.developerCategory.devEnabled) {
                     LOGGER.info("Ran the format rule: {}", rule)
@@ -235,6 +181,7 @@ object FormatManager {
 
         // If we get here, it means the loop finished and no rule returned a non-null result.
         // In this case, we return the original text as the fallback.
+        LOGGER.warn("No rule found to format message: $inputText")
         return FormatResult(inputText)
     }
 }

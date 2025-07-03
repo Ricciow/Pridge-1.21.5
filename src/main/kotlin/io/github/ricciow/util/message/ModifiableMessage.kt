@@ -5,8 +5,9 @@ import io.github.ricciow.Pridge.Companion.mc
 import net.minecraft.client.gui.hud.ChatHud
 import net.minecraft.text.Text
 
-class ModifiableMessage(private var text: Text?, private val id: String) {
-    private val chatHud: ChatHud? = mc.inGameHud.chatHud
+class ModifiableMessage(private var text: Text?, private val id: Int) {
+    private val chatHud: ChatHud?
+        get() = mc.inGameHud.chatHud
     private var sent = false
 
     init {
@@ -30,9 +31,9 @@ class ModifiableMessage(private var text: Text?, private val id: String) {
         }
 
         if (sent) {
-            chatHud.replaceIdentifiableMessage(id, text!!)
+            chatHud!!.replaceIdentifiableMessage(id, text!!)
         } else {
-            chatHud.addIdentifiableMessage(id, text!!)
+            chatHud!!.addIdentifiableMessage(id, text!!)
             sent = true
         }
     }

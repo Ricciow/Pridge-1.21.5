@@ -26,7 +26,7 @@ class RegexFormatRule : FormatRule() {
 
     override fun process(text: String): FormatResult? {
         val pattern = this.pattern ?: run {
-            LOGGER.warn("Pattern for {} is null", trigger)
+            LOGGER.warn("Pattern for $trigger is null")
             return null
         }
 

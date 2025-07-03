@@ -6,9 +6,11 @@ import io.github.ricciow.Pridge.Companion.mc
 import io.github.ricciow.format.FormatManager
 import io.github.ricciow.format.FormatResult
 import io.github.ricciow.sounds.DynamicSoundPlayer
+import io.github.ricciow.util.ChatType
 import io.github.ricciow.util.ColorCode
 import io.github.ricciow.util.TextParser.parse
 import io.github.ricciow.util.TextParser.parseHoverable
+import io.github.ricciow.util.chatHypixel
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.minecraft.client.gui.hud.ChatHud
 import net.minecraft.text.Text
@@ -16,17 +18,81 @@ import net.minecraft.util.Formatting
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
+interface ChatResult {
+    fun handle()
+}
+
+data class GuildChatResult(
+    val user: String,
+    val message: String,
+    val isBot: Boolean = false
+) : ChatResult {
+    override fun handle() {
+
+    }
+}
+
+enum class StatusAction(val color: ColorCode) {
+    JOINED(ColorCode.GREEN), LEFT(ColorCode.RED)
+}
+
+data class StatusChatResult(
+    val user: String,
+    val action: StatusAction
+) : ChatResult {
+    override fun handle() {
+//        val gcat = CONFIG_I.guildCategory
+//        if (gcat.modifyJoinLeave) {
+//            val guildTag = if (gcat.modifyNormalGuildMessages) gcat.name else "&2Guild >"
+//            sendMessage(
+//                parse(
+//                    "$guildTag ${ColorCode.GOLD.getMcCode()}${originalMessage.string.split(" ")[2]} ${action.color}${user}"
+//                )
+//            )
+//            return false
+//        }
+    }
+}
+
+data class PrivateChatResult(
+    val user: String,
+    val message: String
+) : ChatResult {
+    override fun handle() {
+
+    }
+}
+
+enum class BoopBooType {
+    BOOP, BOO
+}
+
+data class BoopBooResult(
+    val user: String,
+    val type: BoopBooType
+) : ChatResult {
+    override fun handle() {
+        mc.player.chatHypixel(
+            ChatType.GUILD, when (type) {
+                BoopBooType.BOOP -> "Thanks for the Boop, $user!"
+                BoopBooType.BOO -> "AAH! You scared me, $user!"
+            }
+        )
+    }
+}
+
 object ChatManager {
     private val GUILD_CHAT_PATTERN: Pattern = Pattern.compile("^Guild > (.*?): (.*)$")
     private val STATUS_CHAT_PATTERN: Pattern = Pattern.compile("^Guild > (.*?) (joined|left)\\.$")
     private val PRIVATE_CHAT_PATTERN: Pattern = Pattern.compile("^From (.*?): (.*)$")
 
-    private var incompleteMessage = ""
+    private var multiMessageBuffered = false
+    private var multiMessage = ""
     private const val SPLIT_CHAR = "➩"
 
     lateinit var chatHud: ChatHud
 
-    fun register() {
+    fun initialize() {
         ClientReceiveMessageEvents.ALLOW_GAME.register(::onReceiveChatMessage)
     }
 
@@ -44,59 +110,55 @@ object ChatManager {
         }
     }
 
-    fun onReceiveChatMessage(message: Text, overlay: Boolean): Boolean {
+    fun onReceiveChatMessage(message: Text, overlay: Boolean): Boolean/*true=show original in chat*/ {
         try {
-            if (CONFIG_I.developerCategory.enabled) {
-                if (overlay) return true
+            if (!CONFIG_I.developerCategory.enabled) return true
+            if (overlay) return true
 
-                if (CONFIG_I.developerCategory.devEnabled) {
-                    LOGGER.info("Received message: {}", message)
-                }
+            if (CONFIG_I.developerCategory.devEnabled) {
+                LOGGER.info("Received message: $message")
+            }
 
-                val cleanRawMessage = Formatting.strip(message.string)
-                if (cleanRawMessage == null) {
-                    return true
-                }
+            val cleanRawMessage = Formatting.strip(message.string) ?: return true
 
-                //Word filters
-                val wordFilters = CONFIG_I.filtersCategory.rawFilter
-                if (wordFilters != "") {
-                    val filterRegex = Pattern.compile(wordFilters)
-                    val filterMatches = filterRegex.matcher(cleanRawMessage)
+            //Word filters
+            val wordFilters = CONFIG_I.filtersCategory.rawFilter
+            if (wordFilters.isNotEmpty()) {
+                val filterRegex = Pattern.compile(wordFilters)
+                val filterMatches = filterRegex.matcher(cleanRawMessage)
 
-                    if (filterMatches.find()) {
-                        if (CONFIG_I.filtersCategory.placeholder) {
-                            sendMessage(parseHoverable("&c&lA message has been filtered.", message))
-                        }
-                        return false
+                if (filterMatches.find()) {
+                    if (CONFIG_I.filtersCategory.placeholder) {
+                        sendMessage(parseHoverable("&c&lA message has been filtered.", message))
                     }
-                }
-
-                //Sound Player
-                if (CONFIG_I.soundsCategory.enabled) {
-                    DynamicSoundPlayer.playSoundIfMessageContains(cleanRawMessage)
-                }
-
-                //Guild Chat Message handling
-                val guildMatcher = GUILD_CHAT_PATTERN.matcher(cleanRawMessage)
-                if (guildMatcher.matches()) {
-                    return onReceiveGuildMessage(message, guildMatcher)
-                }
-
-                //Join/Leave handling
-                val statusMatcher = STATUS_CHAT_PATTERN.matcher(cleanRawMessage)
-                if (statusMatcher.matches()) {
-                    return onReceiveStatusMessage(message, statusMatcher)
-                }
-
-                //Direct Message handling
-                val privateMatcher = PRIVATE_CHAT_PATTERN.matcher(cleanRawMessage)
-                if (privateMatcher.matches()) {
-                    return onReceivePrivateMessage(message, privateMatcher)
+                    return false
                 }
             }
+
+            //Sound Player
+            if (CONFIG_I.soundsCategory.enabled) {
+                DynamicSoundPlayer.playSoundIfMessageContains(cleanRawMessage)
+            }
+
+            //Guild Chat Message handling
+            val guildMatcher = GUILD_CHAT_PATTERN.matcher(cleanRawMessage)
+            if (guildMatcher.matches()) {
+                return onReceiveGuildMessage(message, guildMatcher)
+            }
+
+            //Join/Leave handling
+            val statusMatcher = STATUS_CHAT_PATTERN.matcher(cleanRawMessage)
+            if (statusMatcher.matches()) {
+                return onReceiveStatusMessage(message, statusMatcher)
+            }
+
+            //Direct Message handling
+            val privateMatcher = PRIVATE_CHAT_PATTERN.matcher(cleanRawMessage)
+            if (privateMatcher.matches()) {
+                return onReceivePrivateMessage(message, privateMatcher)
+            }
         } catch (e: Exception) {
-            LOGGER.error("FATAL: An error occurred on the message: {}", message.string, e)
+            LOGGER.error("Error while processing chat message: $message", e)
         }
         return true
     }
@@ -107,57 +169,33 @@ object ChatManager {
 
         chatContent = chatContent.replace("<@\\S+>".toRegex(), "").trim()
 
-        val userOptional = userInfo.split(" ")
-            .filter {
-                !it.isEmpty()
-            }.firstOrNull { part ->
-                !part.startsWith("[") && !part.endsWith("]")
-            }
+        val userOptional = userInfo.split(" ").firstOrNull { part ->
+            !part.startsWith("[") && !part.endsWith("]")
+        } ?: return true;
 
         // Only proceed if we successfully found a username.
-        if (userOptional != null) {
-            if (userOptional.equals(CONFIG_I.botCategory.ign, ignoreCase = true)) {
-                return onReceiveBotMessage(originalMessage, userInfo, chatContent)
-            }
-            return onReceivePlayerMessage(originalMessage, userInfo, chatContent)
+        if (userOptional.equals(CONFIG_I.botCategory.ign, ignoreCase = true)) {
+            return onReceiveBotMessage(chatContent)
         }
-        return true
+        return onReceivePlayerMessage(originalMessage)
     }
 
-    private fun onReceiveBotMessage(originalMessage: Text, userInfo: String, chatContent: String): Boolean {
-        val startsWithSplit = chatContent.startsWith(SPLIT_CHAR)
-        val endsWithSplit = chatContent.endsWith(SPLIT_CHAR)
-        val isBuffering = !incompleteMessage.isEmpty()
+    private fun onReceiveBotMessage(chatContent: String): Boolean {
+        if (handlePartial(chatContent)) {
+            if (CONFIG_I.developerCategory.devEnabled) {
+                LOGGER.info("Partial message was handled: $chatContent")
+            }
+        }
 
         var finalContent: String
-
-        if (isBuffering) {
-            if (startsWithSplit) {
-                val middlePart = chatContent.substring(1)
-                if (endsWithSplit) {
-                    incompleteMessage += middlePart.substring(0, middlePart.length - 1)
-                    if (CONFIG_I.developerCategory.devEnabled) {
-                        LOGGER.info("Incomplete message was hid: {}", incompleteMessage)
-                    }
-                    return false
-                } else {
-                    finalContent = incompleteMessage + middlePart
-                    incompleteMessage = ""
-                }
-            } else {
-                incompleteMessage = ""
-                finalContent = chatContent
-            }
+        if (multiMessageBuffered) {
+            finalContent = multiMessage
+            multiMessageBuffered = false
+            multiMessage = ""
+        } else if (multiMessage.isNotEmpty()) {
+            return false
         } else {
-            if (endsWithSplit) {
-                incompleteMessage = chatContent.substring(0, chatContent.length - 1)
-                if (CONFIG_I.developerCategory.devEnabled) {
-                    LOGGER.info("Incomplete message was hid: {}", incompleteMessage)
-                }
-                return false
-            } else {
-                finalContent = chatContent
-            }
+            finalContent = chatContent
         }
 
         val formattedContent = FormatManager.formatText(finalContent)
@@ -168,12 +206,20 @@ object ChatManager {
         return false
     }
 
-    private fun onReceivePlayerMessage(originalMessage: Text, userInfo: String, chatContent: String): Boolean {
-        if (CONFIG_I.guildCategory.modifyNormalGuildMessages) {
-            sendMessage(parse(originalMessage.string.replace("§2Guild >", CONFIG_I.guildCategory.name)))
+    private fun handlePartial(message: String): Boolean {
+        if (!message.contains(SPLIT_CHAR)) {
             return false
+        } else {
+            multiMessage += message.replace(SPLIT_CHAR, "")
+            multiMessageBuffered = !message.endsWith(SPLIT_CHAR)
+            return true
         }
-        return true
+    }
+
+    private fun onReceivePlayerMessage(originalMessage: Text): Boolean {
+        if (!CONFIG_I.guildCategory.modifyNormalGuildMessages) return true
+        sendMessage(parse(originalMessage.string.replace("§2Guild >", CONFIG_I.guildCategory.name)))
+        return false
     }
 
     private fun onReceiveStatusMessage(originalMessage: Text, matcher: Matcher): Boolean {
@@ -204,13 +250,13 @@ object ChatManager {
             }
 
             if (user != null) {
-                if (mc.player != null) {
-                    if (matcher.group(2) == "Boop!") {
-                        mc.player!!.networkHandler.sendChatCommand("gc Thanks for the Boop, $user!")
-                    } else if (matcher.group(2) == "Boo!") {
-                        mc.player!!.networkHandler.sendChatCommand("gc AAH! You scared me, $user!")
+                mc.player.chatHypixel(
+                    ChatType.GUILD, when (matcher.group(2)) {
+                        "Boop!" -> "Thanks for the Boop, $user!"
+                        "Boo!" -> "AAH! You scared me, $user!"
+                        else -> null
                     }
-                }
+                )
             }
         }
         return true

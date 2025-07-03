@@ -40,7 +40,7 @@ public abstract class ChatHudMixin implements IdentifiableChatHud {
     private void logChatMessage(ChatHudLine message) {
     }
 
-    public void pridge$addIdentifiableMessage(@NotNull String id, @NotNull Text message) {
+    public void pridge$addIdentifiableMessage(int id, @NotNull Text message) {
         addMessage(message);
 
         if (!messages.isEmpty()) {
@@ -48,12 +48,12 @@ public abstract class ChatHudMixin implements IdentifiableChatHud {
         }
     }
 
-    public void pridge$removeIdentifiableMessage(@NotNull String id) {
+    public void pridge$removeIdentifiableMessage(int id) {
         int initialSize = messages.size();
 
         messages.removeIf(line -> {
-            String lineId = IChatHudLineKt.cast(line).pridge$getIdentifier();
-            return lineId != null && lineId.equals(id);
+            Integer lineId = IChatHudLineKt.cast(line).pridge$getIdentifier();
+            return lineId > 0 && lineId.equals(id);
         });
 
         int finalSize = messages.size();
@@ -64,7 +64,7 @@ public abstract class ChatHudMixin implements IdentifiableChatHud {
         }
     }
 
-    public void pridge$replaceIdentifiableMessage(@NotNull String id, @NotNull Text message) {
+    public void pridge$replaceIdentifiableMessage(int id, @NotNull Text message) {
 
         boolean replaced = false;
 
@@ -72,8 +72,8 @@ public abstract class ChatHudMixin implements IdentifiableChatHud {
 
         while (iterator.hasNext()) {
             ChatHudLine oldLine = iterator.next();
-            String lineId = IChatHudLineKt.cast(oldLine).pridge$getIdentifier();
-            if (id.equals(lineId)) {
+            int lineId = IChatHudLineKt.cast(oldLine).pridge$getIdentifier();
+            if (lineId > 0 && id == lineId) {
                 ChatHudLine newLine = new ChatHudLine(oldLine.creationTick(), message, null, this.client.isConnectedToLocalServer() ? MessageIndicator.singlePlayer() : MessageIndicator.system());
 
                 IChatHudLineKt.cast(newLine).pridge$setIdentifier(id);

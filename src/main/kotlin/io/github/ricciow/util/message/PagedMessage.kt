@@ -1,5 +1,6 @@
 package io.github.ricciow.util.message
 
+import io.github.ricciow.Pridge.Companion.LOGGER
 import net.minecraft.text.ClickEvent.RunCommand
 import net.minecraft.text.HoverEvent.ShowText
 import net.minecraft.text.Style
@@ -8,6 +9,7 @@ import net.minecraft.text.TextColor
 import java.util.*
 
 class PagedMessage {
+    val id: Int
     private val prefix: Text?
     private val pages: MutableList<Text>
     private val titles: MutableList<Text>
@@ -15,8 +17,6 @@ class PagedMessage {
     private val disabledArrowColor: TextColor
     private var pageIndex = 0
     private val message: ModifiableMessage
-    private val id: String
-    private var disabled = false
 
     internal constructor(
         pages: MutableList<Text>,
@@ -25,13 +25,19 @@ class PagedMessage {
         disabledArrowColor: TextColor?,
         prefix: Text?
     ) {
+        this.id = nextId
         this.pages = pages
         this.titles = mutableListOf(title)
         this.arrowColor = arrowColor
         this.disabledArrowColor = disabledArrowColor ?: arrowColor
-        this.id = UUID.randomUUID().toString()
         this.prefix = prefix
-        message = ModifiableMessage(buildText(), id)
+        this.message = ModifiableMessage(buildText(), id)
+
+        try {
+            println(toString())
+        } catch (e: Exception) {
+            LOGGER.error("Error while printing PagedMessage toString", e)
+        }
     }
 
     internal constructor(
@@ -41,13 +47,19 @@ class PagedMessage {
         disabledArrowColor: TextColor?,
         prefix: Text?
     ) {
+        this.id = nextId
         this.pages = pages
         this.titles = titles
         this.arrowColor = arrowColor
         this.disabledArrowColor = disabledArrowColor ?: arrowColor
-        this.id = UUID.randomUUID().toString()
         this.prefix = prefix
-        message = ModifiableMessage(buildText(), id)
+        this.message = ModifiableMessage(buildText(), id)
+
+        try {
+            println(toString())
+        } catch (e: Exception) {
+            LOGGER.error("Error while printing PagedMessage toString", e)
+        }
     }
 
     private fun buildText(): Text {
@@ -66,41 +78,30 @@ class PagedMessage {
         return baseText
     }
 
-    private fun buildLeftStyle(): Style? {
+    private fun buildLeftStyle(): Style {
         val baseStyle = Style.EMPTY.withColor(disabledArrowColor)
-        if (disabled) {
-            return baseStyle.withHoverEvent(ShowText(Text.literal("Paging Disabled")))
-        }
 
         if (pageIndex != 0) {
             return baseStyle
                 .withColor(arrowColor)
-                .withClickEvent(RunCommand("pagedmessage left"))
+                .withClickEvent(RunCommand("pagedmessage $id left"))
                 .withHoverEvent(ShowText(Text.literal("Previous page")))
         }
 
         return baseStyle.withHoverEvent(ShowText(Text.literal("No pages to the Left!")))
     }
 
-    private fun buildRightStyle(): Style? {
+    private fun buildRightStyle(): Style {
         val baseStyle = Style.EMPTY.withColor(disabledArrowColor)
-        if (disabled) {
-            return baseStyle.withHoverEvent(ShowText(Text.literal("Paging Disabled")))
-        }
 
         if (pageIndex < pages.size - 1) {
             return baseStyle
                 .withColor(arrowColor)
-                .withClickEvent(RunCommand("pagedmessage right"))
+                .withClickEvent(RunCommand("pagedmessage $id right"))
                 .withHoverEvent(ShowText(Text.literal("Next page")))
         }
 
         return baseStyle.withHoverEvent(ShowText(Text.literal("No pages to the Right!")))
-    }
-
-    fun disablePaging() {
-        disabled = true
-        message.modify(buildText())
     }
 
     fun setPage(page: Int) {
@@ -116,13 +117,45 @@ class PagedMessage {
         }
     }
 
-    fun lastPage() {
+    fun previousPage() {
         if (pageIndex > 0) {
             setPage(pageIndex - 1)
         }
     }
 
     override fun toString(): String {
-        return "Paged Message with id: $id"
+        val titleAndPageList = titles.mapIndexed { index, text ->
+            """
+            {
+                Title ${index + 1}: ${text.string}
+                Page ${index + 1}: ${pages.getOrNull(index)?.string ?: "No page available"}
+            }
+            """.trimIndent()
+        }
+
+
+        val toString =
+        """
+        PagedMessage: {
+            ID: $id
+            Prefix: ${prefix?.string ?: "No prefix"}
+            Pages: {
+                ${titleAndPageList.joinToString("\n")}
+            }
+            Current Page Index: $pageIndex
+            Arrow Color: ${arrowColor.name}
+            Disabled Arrow Color: ${disabledArrowColor.name}
+        }
+        """.trimIndent()
+        return toString
+    }
+
+    companion object {
+        private var nextId = 0
+            get(): Int {
+                val currentId = field
+                field++
+                return currentId
+            }
     }
 }

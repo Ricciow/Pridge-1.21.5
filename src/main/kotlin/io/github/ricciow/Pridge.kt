@@ -3,9 +3,12 @@ package io.github.ricciow
 import com.mojang.brigadier.Command
 import io.github.notenoughupdates.moulconfig.common.IMinecraft
 import io.github.notenoughupdates.moulconfig.managed.ManagedConfig
+import io.github.ricciow.command.CommandManager
 import io.github.ricciow.config.PridgeConfig
 import io.github.ricciow.format.FormatManager
+import io.github.ricciow.format.SpecialFunctions
 import io.github.ricciow.rendering.ImagePreviewRenderer
+import io.github.ricciow.sounds.DynamicSoundPlayer
 import io.github.ricciow.util.message.PagedMessageFactory
 import kotlinx.io.IOException
 import net.fabricmc.api.ClientModInitializer
@@ -30,11 +33,12 @@ class Pridge : ClientModInitializer {
 
         initializeConfig()
 
-        PagedMessageFactory.initialize()
-
+        // Initialize object data
         FormatManager.initialize()
-
-        ChatManager.register()
+        ChatManager.initialize()
+        DynamicSoundPlayer.initialize()
+        SpecialFunctions.initialize()
+        CommandManager.initialize()
 
         try {
             Files.createDirectories(CONFIG_DIR.resolve("sounds"))
@@ -49,8 +53,6 @@ class Pridge : ClientModInitializer {
             layeredDrawer.attachLayerAfter(IdentifiedLayer.CHAT, imagePreviewLayer, imagePreviewRenderer::onHudRender)
         }
 
-        CommandManager.register()
-
         LOGGER.info("[Pridge] Initialized successfully!")
     }
 
@@ -60,20 +62,13 @@ class Pridge : ClientModInitializer {
 
         CONFIG = ManagedConfig.create(configFile, PridgeConfig::class.java)
 
-        CommandManager.addCommand(
-            literal("pridge").executes { context ->
-                mc.send { IMinecraft.instance.openWrappedScreen(CONFIG.getEditor()) }
-                Command.SINGLE_SUCCESS
-            }
-        )
-
         //Add saving logic every 60s
-        val saveTask = Runnable {
-            LOGGER.info("Performing scheduled config save...")
-            CONFIG.saveToFile()
-        }
-
-        pridgeScheduler.scheduleAtFixedRate(saveTask, 60, 60, TimeUnit.SECONDS)
+//        val saveTask = Runnable {
+//            LOGGER.info("Performing scheduled config save...")
+//            CONFIG.saveToFile()
+//        }
+//
+//        pridgeScheduler.scheduleAtFixedRate(saveTask, 60, 60, TimeUnit.SECONDS)
 
         //Add shutdown Hook to save the config
         Runtime.getRuntime().addShutdownHook(Thread {

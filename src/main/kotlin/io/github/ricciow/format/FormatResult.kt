@@ -38,7 +38,7 @@ class FormatResult {
         pages: MutableList<Text>,
         title: Text,
         arrowColor: TextColor,
-        disabledArrowColor: TextColor?,
+        disabledArrowColor: TextColor,
         prefix: Text?,
         discordText: Boolean = false,
         botText: Boolean = false
@@ -63,7 +63,7 @@ class FormatResult {
         pages: MutableList<Text>,
         title: MutableList<Text>,
         arrowColor: TextColor,
-        disabledArrowColor: TextColor?,
+        disabledArrowColor: TextColor,
         prefix: Text?,
         discordText: Boolean = false,
         botText: Boolean = false

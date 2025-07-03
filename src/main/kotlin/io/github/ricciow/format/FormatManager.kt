@@ -97,7 +97,7 @@ object FormatManager {
             Files.createDirectories(configFile.parent)
             FileWriter(configFile.toFile()).use { writer ->
                 GSON.toJson(config, writer)
-                LOGGER.info("Format saved successfully to {}", configFile)
+                LOGGER.info("Format saved successfully to $configFile")
             }
         } catch (e: IOException) {
             LOGGER.error("Failed to save format file.", e)
@@ -144,7 +144,7 @@ object FormatManager {
 
         Pridge::class.java.getClassLoader().getResourceAsStream(assetPath).use { stream ->
             this.config = if (stream == null) {
-                LOGGER.error("Default format asset not found at path: {}", assetPath)
+                LOGGER.error("Default format asset not found at path: $assetPath")
                 ChatFormat()
             } else {
                 try {
@@ -152,7 +152,7 @@ object FormatManager {
                         GSON.fromJson(reader, ChatFormat::class.java)
                     }
                 } catch (e: Exception) {
-                    LOGGER.error("Failed to read default format asset from path: {}", assetPath, e)
+                    LOGGER.error("Failed to read default format asset from path: $assetPath", e)
                     ChatFormat()
                 }
             }
@@ -173,7 +173,7 @@ object FormatManager {
             val result = rule.process(inputText)
             if (result != null) {
                 if (CONFIG_I.developerCategory.devEnabled) {
-                    LOGGER.info("Ran the format rule: {}", rule)
+                    LOGGER.info("Ran the format rule: $rule")
                 }
                 return result
             }

@@ -200,7 +200,7 @@ object ChatManager {
 
         val formattedContent = FormatManager.formatText(finalContent)
         if (CONFIG_I.developerCategory.devEnabled) {
-            LOGGER.info("Message was formatted to: {}", formattedContent)
+            LOGGER.info("Message was formatted to: $formattedContent")
         }
         sendMessage(formattedContent)
         return false

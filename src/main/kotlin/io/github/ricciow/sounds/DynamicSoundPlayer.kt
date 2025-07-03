@@ -27,7 +27,7 @@ object DynamicSoundPlayer {
 
     fun play(fileName: String) {
         if (!Files.exists(soundsDir.resolve("$fileName.ogg"))) {
-            LOGGER.warn("Attempted to play a dynamic sound that does not exist: {}", fileName)
+            LOGGER.warn("Attempted to play a dynamic sound that does not exist: $fileName")
             return
         }
 
@@ -97,7 +97,7 @@ object DynamicSoundPlayer {
             message.contains("*${soundName.replace("_", " ")}*")
         }?.let {
             if (CONFIG_I.developerCategory.devEnabled) {
-                LOGGER.info("Played {} sound for the message: {}", it, message)
+                LOGGER.info("Played $it sound for the message: $message")
             }
             play(it)
         }

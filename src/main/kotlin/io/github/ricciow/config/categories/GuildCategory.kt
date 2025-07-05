@@ -22,6 +22,18 @@ class GuildCategory {
     var thanksForTheBoop = true
 
     @Expose
+    @ConfigOption(name = "Boop reply message", desc = "The message to send when you receive a Boop! 'Thanks for the Boop, {user}!', can have multiple {user}")
+    @ConfigEditorText
+    @JvmField
+    var boopReplyMessage = "Thanks for the Boop, {user}!"
+
+    @Expose
+    @ConfigOption(name = "Enable boop/boo messages", desc = "The message to send when you receive a Boop! 'AAH! You scared me, {user}!', can have multiple {user}")
+    @ConfigEditorText
+    @JvmField
+    var booReplyMessage = "AAH! You scared me, {user}!"
+
+    @Expose
     @ConfigOption(name = "Modify join/leave messages", desc = "Will add a custom colored Join/Leave message")
     @ConfigEditorBoolean
     @JvmField

@@ -68,14 +68,6 @@ object Pridge : ClientModInitializer {
 
         CONFIG = ManagedConfig.create(configFile, PridgeConfig::class.java)
 
-        //Add saving logic every 60s
-//        val saveTask = Runnable {
-//            PridgeLogger.info("Performing scheduled config save...")
-//            CONFIG.saveToFile()
-//        }
-//
-//        pridgeScheduler.scheduleAtFixedRate(saveTask, 60, 60, TimeUnit.SECONDS)
-
         //Add shutdown Hook to save the config
         ClientLifecycleEvents.CLIENT_STOPPING.register { _ ->
             PridgeLogger.info("Shutting down, saving config...")

@@ -1,18 +1,14 @@
 package io.github.ricciow
 
-import io.github.ricciow.Pridge.Companion.CONFIG_I
-import io.github.ricciow.Pridge.Companion.LOGGER
-import io.github.ricciow.Pridge.Companion.mc
+import io.github.ricciow.Pridge.CONFIG_I
+import io.github.ricciow.Pridge.mc
 import io.github.ricciow.format.FormatManager
 import io.github.ricciow.format.FormatResult
 import io.github.ricciow.sounds.DynamicSoundPlayer
-import io.github.ricciow.util.ChatType
-import io.github.ricciow.util.ColorCode
+import io.github.ricciow.util.*
 import io.github.ricciow.util.TextParser.parse
 import io.github.ricciow.util.TextParser.parseHoverable
-import io.github.ricciow.util.chatHypixel
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
-import net.minecraft.client.gui.hud.ChatHud
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import java.util.regex.Matcher
@@ -90,23 +86,14 @@ object ChatManager {
     private var multiMessage = ""
     private const val SPLIT_CHAR = "➩"
 
-    lateinit var chatHud: ChatHud
-
     fun initialize() {
         ClientReceiveMessageEvents.ALLOW_GAME.register(::onReceiveChatMessage)
-    }
-
-    private fun sendMessage(message: Text?) {
-        if (!::chatHud.isInitialized) {
-            chatHud = mc.inGameHud.chatHud
-        }
-        chatHud.addMessage(message)
     }
 
     private fun sendMessage(result: FormatResult) {
         val message = result.getText()
         if (message != null) {
-            sendMessage(message)
+            ChatUtils.sendMessage(message)
         }
     }
 
@@ -115,9 +102,7 @@ object ChatManager {
             if (!CONFIG_I.developerCategory.enabled) return true
             if (overlay) return true
 
-            if (CONFIG_I.developerCategory.devEnabled) {
-                LOGGER.info("Received message: $message")
-            }
+            PridgeLogger.dev("Received message: $message")
 
             val cleanRawMessage = Formatting.strip(message.string) ?: return true
 
@@ -129,7 +114,7 @@ object ChatManager {
 
                 if (filterMatches.find()) {
                     if (CONFIG_I.filtersCategory.placeholder) {
-                        sendMessage(parseHoverable("&c&lA message has been filtered.", message))
+                        ChatUtils.sendMessage(parseHoverable("&c&lA message has been filtered.", message))
                     }
                     return false
                 }
@@ -158,7 +143,7 @@ object ChatManager {
                 return onReceivePrivateMessage(message, privateMatcher)
             }
         } catch (e: Exception) {
-            LOGGER.error("Error while processing chat message: $message", e)
+            PridgeLogger.error("Error while processing chat message: $message", e)
         }
         return true
     }
@@ -182,9 +167,7 @@ object ChatManager {
 
     private fun onReceiveBotMessage(chatContent: String): Boolean {
         if (handlePartial(chatContent)) {
-            if (CONFIG_I.developerCategory.devEnabled) {
-                LOGGER.info("Partial message was handled: $chatContent")
-            }
+            PridgeLogger.dev("Partial message was handled: $chatContent")
         }
 
         var finalContent: String
@@ -199,10 +182,8 @@ object ChatManager {
         }
 
         val formattedContent = FormatManager.formatText(finalContent)
-        if (CONFIG_I.developerCategory.devEnabled) {
-            LOGGER.info("Message was formatted to: $formattedContent")
-        }
-        sendMessage(formattedContent)
+        PridgeLogger.dev("Message was formatted to: $formattedContent")
+        ChatUtils.sendMessage(formattedContent.getText())
         return false
     }
 
@@ -218,7 +199,7 @@ object ChatManager {
 
     private fun onReceivePlayerMessage(originalMessage: Text): Boolean {
         if (!CONFIG_I.guildCategory.modifyNormalGuildMessages) return true
-        sendMessage(parse(originalMessage.string.replace("§2Guild >", CONFIG_I.guildCategory.name)))
+        ChatUtils.sendMessage(parse(originalMessage.string.replace("§2Guild >", CONFIG_I.guildCategory.name)))
         return false
     }
 
@@ -227,7 +208,7 @@ object ChatManager {
             val guildTag =
                 if (CONFIG_I.guildCategory.modifyNormalGuildMessages) CONFIG_I.guildCategory.name else "&2Guild >"
             val colorCode = if (matcher.group(2) == "left") ColorCode.RED else ColorCode.GREEN
-            sendMessage(
+            ChatUtils.sendMessage(
                 parse(
                     "$guildTag ${ColorCode.GOLD.getMcCode()}${originalMessage.string.split(" ")[2]} ${colorCode.getMcCode()}${
                         matcher.group(

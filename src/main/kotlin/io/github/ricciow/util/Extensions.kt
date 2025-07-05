@@ -2,8 +2,11 @@ package io.github.ricciow.util
 
 import io.github.notenoughupdates.moulconfig.Config
 import io.github.notenoughupdates.moulconfig.managed.ManagedConfig
-import io.github.ricciow.Pridge.Companion.mc
+import io.github.ricciow.Pridge.mc
 import net.minecraft.client.network.ClientPlayerEntity
+import net.minecraft.text.MutableText
+import net.minecraft.text.Style
+import net.minecraft.text.Text
 
 enum class ChatType(val prefix: String) {
     ALL("/ac"),
@@ -33,3 +36,5 @@ fun ClientPlayerEntity?.sendMessage(message: String) {
 fun <T : Config> ManagedConfig<T>.scheduleConfigOpen() {
     mc.send { openConfigGui() }
 }
+
+fun String.toText(style: Style = Style.EMPTY): MutableText = Text.literal(this).setStyle(style)

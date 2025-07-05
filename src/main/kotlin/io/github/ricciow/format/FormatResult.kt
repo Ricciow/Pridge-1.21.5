@@ -1,6 +1,6 @@
 package io.github.ricciow.format
 
-import io.github.ricciow.Pridge.Companion.CONFIG_I
+import io.github.ricciow.Pridge.CONFIG_I
 import io.github.ricciow.util.TextParser.parse
 import io.github.ricciow.util.message.PagedMessageFactory
 import net.minecraft.text.MutableText

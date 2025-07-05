@@ -6,8 +6,8 @@ import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
+import io.github.ricciow.util.toText
 import net.minecraft.command.CommandSource
-import net.minecraft.text.Text
 import java.util.concurrent.CompletableFuture
 
 class StringListArgumentType(private val stringList: List<String>) : ArgumentType<String> {
@@ -17,7 +17,7 @@ class StringListArgumentType(private val stringList: List<String>) : ArgumentTyp
         val input = reader.readString()
         return stringList.find { it == input }
             ?: throw SimpleCommandExceptionType(
-                Text.literal("Invalid argument: '$input'. Expected one of: ${stringList.joinToString(", ")}")
+                "Invalid argument: '$input'. Expected one of: ${stringList.joinToString(", ")}".toText()
             ).createWithContext(reader)
     }
 

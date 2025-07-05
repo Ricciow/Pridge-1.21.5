@@ -1,16 +1,15 @@
 package io.github.ricciow.util.message
 
-import io.github.ricciow.Pridge.Companion.LOGGER
+import io.github.ricciow.util.toText
 import net.minecraft.text.ClickEvent.RunCommand
 import net.minecraft.text.HoverEvent.ShowText
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.text.TextColor
-import java.util.*
 
 class PagedMessage {
     val id: Int
-    private val prefix: Text?
+    private val prefix: Text
     private val pages: MutableList<Text>
     private val titles: MutableList<Text>
     private val arrowColor: TextColor
@@ -18,60 +17,52 @@ class PagedMessage {
     private var pageIndex = 0
     private val message: ModifiableMessage
 
+    // Single title constructor
     internal constructor(
         pages: MutableList<Text>,
         title: Text,
         arrowColor: TextColor,
-        disabledArrowColor: TextColor?,
-        prefix: Text?
+        disabledArrowColor: TextColor,
+        prefix: Text
     ) {
-        this.id = nextId
         this.pages = pages
         this.titles = mutableListOf(title)
         this.arrowColor = arrowColor
-        this.disabledArrowColor = disabledArrowColor ?: arrowColor
+        this.disabledArrowColor = disabledArrowColor
         this.prefix = prefix
-        this.message = ModifiableMessage(buildText(), id)
 
-        try {
-            println(toString())
-        } catch (e: Exception) {
-            LOGGER.error("Error while printing PagedMessage toString", e)
-        }
+        this.id = hashCode()
+        this.message = ModifiableMessage(buildText(), id)
     }
 
+    // Multi-title constructor
     internal constructor(
         pages: MutableList<Text>,
         titles: MutableList<Text>,
         arrowColor: TextColor,
-        disabledArrowColor: TextColor?,
-        prefix: Text?
+        disabledArrowColor: TextColor,
+        prefix: Text
     ) {
-        this.id = nextId
         this.pages = pages
         this.titles = titles
         this.arrowColor = arrowColor
-        this.disabledArrowColor = disabledArrowColor ?: arrowColor
+        this.disabledArrowColor = disabledArrowColor
         this.prefix = prefix
-        this.message = ModifiableMessage(buildText(), id)
 
-        try {
-            println(toString())
-        } catch (e: Exception) {
-            LOGGER.error("Error while printing PagedMessage toString", e)
-        }
+        this.id = hashCode()
+        this.message = ModifiableMessage(buildText(), id)
     }
 
     private fun buildText(): Text {
         var title: Text? = null
         if (pageIndex in 0 until pages.size) {
-            title = titles.getOrNull(pageIndex) ?: titles.firstOrNull() ?: Text.literal("No title found")
+            title = titles.getOrNull(pageIndex) ?: titles.firstOrNull() ?: "No title found".toText()
         }
 
-        val baseText = if (prefix != null) prefix.copy() else Text.literal("")
-        baseText.append(Text.literal("<< ").setStyle(buildLeftStyle()))
+        val baseText = prefix.copy()
+        baseText.append("<< ".toText(buildLeftStyle()))
         baseText.append(title)
-        baseText.append(Text.literal(" >>").setStyle(buildRightStyle()))
+        baseText.append(" >>".toText(buildRightStyle()))
         baseText.append("\n")
         baseText.append(pages[pageIndex])
 
@@ -81,14 +72,13 @@ class PagedMessage {
     private fun buildLeftStyle(): Style {
         val baseStyle = Style.EMPTY.withColor(disabledArrowColor)
 
-        if (pageIndex != 0) {
-            return baseStyle
-                .withColor(arrowColor)
+        return if (pageIndex != 0) {
+            baseStyle.withColor(arrowColor)
                 .withClickEvent(RunCommand("pagedmessage $id left"))
-                .withHoverEvent(ShowText(Text.literal("Previous page")))
+                .withHoverEvent(ShowText("Previous page".toText()))
+        } else {
+            baseStyle.withHoverEvent(ShowText("No pages to the Left!".toText()))
         }
-
-        return baseStyle.withHoverEvent(ShowText(Text.literal("No pages to the Left!")))
     }
 
     private fun buildRightStyle(): Style {
@@ -98,10 +88,10 @@ class PagedMessage {
             return baseStyle
                 .withColor(arrowColor)
                 .withClickEvent(RunCommand("pagedmessage $id right"))
-                .withHoverEvent(ShowText(Text.literal("Next page")))
+                .withHoverEvent(ShowText("Next page".toText()))
         }
 
-        return baseStyle.withHoverEvent(ShowText(Text.literal("No pages to the Right!")))
+        return baseStyle.withHoverEvent(ShowText("No pages to the Right!".toText()))
     }
 
     fun setPage(page: Int) {
@@ -138,7 +128,7 @@ class PagedMessage {
         """
         PagedMessage: {
             ID: $id
-            Prefix: ${prefix?.string ?: "No prefix"}
+            Prefix: ${prefix.string}
             Pages: {
                 ${titleAndPageList.joinToString("\n")}
             }
@@ -148,14 +138,5 @@ class PagedMessage {
         }
         """.trimIndent()
         return toString
-    }
-
-    companion object {
-        private var nextId = 0
-            get(): Int {
-                val currentId = field
-                field++
-                return currentId
-            }
     }
 }

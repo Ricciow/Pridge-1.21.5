@@ -17,7 +17,7 @@ object PagedMessageFactory {
         title: Text,
         arrowColor: TextColor,
         disabledArrowColor: TextColor,
-        prefix: Text?
+        prefix: Text
     ) {
         val pagedMessage = PagedMessage(pages, title, arrowColor, disabledArrowColor, prefix)
         pagedMessages[pagedMessage.id] = pagedMessage
@@ -28,7 +28,7 @@ object PagedMessageFactory {
         titles: MutableList<Text>,
         arrowColor: TextColor,
         disabledArrowColor: TextColor,
-        prefix: Text?
+        prefix: Text
     ) {
         val pagedMessage = PagedMessage(pages, titles, arrowColor, disabledArrowColor, prefix)
         pagedMessages[pagedMessage.id] = pagedMessage

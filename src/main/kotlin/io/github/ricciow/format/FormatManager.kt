@@ -1,13 +1,12 @@
 package io.github.ricciow.format
 
 import com.google.gson.GsonBuilder
-import com.google.gson.JsonIOException
 import com.google.gson.JsonSyntaxException
 import io.github.ricciow.Pridge
-import io.github.ricciow.Pridge.Companion.CONFIG_DIR
-import io.github.ricciow.Pridge.Companion.CONFIG_I
-import io.github.ricciow.Pridge.Companion.LOGGER
-import io.github.ricciow.Pridge.Companion.MOD_ID
+import io.github.ricciow.Pridge.CONFIG_DIR
+import io.github.ricciow.Pridge.CONFIG_I
+import io.github.ricciow.Pridge.MOD_ID
+import io.github.ricciow.util.PridgeLogger
 import io.github.ricciow.util.UrlContentFetcher
 import java.io.FileReader
 import java.io.FileWriter
@@ -19,7 +18,6 @@ import java.nio.file.Files
 object FormatManager {
     private val configFile = CONFIG_DIR.resolve(MOD_ID).resolve("formats.json")
     var config: ChatFormat? = null
-    private var lastReloadType = "default"
 
     private val GSON = GsonBuilder()
         .registerTypeAdapterFactory(
@@ -38,7 +36,7 @@ object FormatManager {
         try {
             loadFromGithub()
             save()
-            LOGGER.info("Loaded formattings from GitHub")
+            PridgeLogger.info("Loaded formattings from GitHub")
 
             //Initialize Patterns
             if (config != null) {
@@ -47,9 +45,9 @@ object FormatManager {
                 }
             }
         } catch (e: IOException) {
-            LOGGER.error("Failed to load from github:", e)
+            PridgeLogger.error("Failed to load from github:", e)
         } catch (e: URISyntaxException) {
-            LOGGER.error("Failed to load from github:", e)
+            PridgeLogger.error("Failed to load from github:", e)
         }
     }
 
@@ -57,12 +55,12 @@ object FormatManager {
         if (Files.exists(configFile)) {
             try {
                 FileReader(configFile.toFile()).use { reader ->
-                    LOGGER.info("Loading existing format file...")
+                    PridgeLogger.info("Loading existing format file...")
                     config = GSON.fromJson(reader, ChatFormat::class.java)
                     if (config == null) {
                         throw IOException("Format file is empty or corrupted.")
                     }
-                    LOGGER.info("Format loaded successfully.")
+                    PridgeLogger.info("Format loaded successfully.")
 
                     //Initialize Patterns
                     if (config != null) {
@@ -72,14 +70,14 @@ object FormatManager {
                     }
                 }
             } catch (e: IOException) {
-                LOGGER.error("Failed to load format file! Creating a new default format from asset.", e)
+                PridgeLogger.error("Failed to load format file! Creating a new default format from asset.", e)
                 loadFromDefaultAssetAndSave()
             } catch (e: JsonSyntaxException) {
-                LOGGER.error("Failed to load format file! Creating a new default format from asset.", e)
+                PridgeLogger.error("Failed to load format file! Creating a new default format from asset.", e)
                 loadFromDefaultAssetAndSave()
             }
         } else {
-            LOGGER.info("No format file found. Creating a new default format from asset...")
+            PridgeLogger.info("No format file found. Creating a new default format from asset...")
             loadFromDefaultAssetAndSave()
         }
     }
@@ -97,10 +95,10 @@ object FormatManager {
             Files.createDirectories(configFile.parent)
             FileWriter(configFile.toFile()).use { writer ->
                 GSON.toJson(config, writer)
-                LOGGER.info("Format saved successfully to $configFile")
+                PridgeLogger.info("Format saved successfully to $configFile")
             }
         } catch (e: IOException) {
-            LOGGER.error("Failed to save format file.", e)
+            PridgeLogger.error("Failed to save format file.", e)
         }
     }
 
@@ -112,7 +110,7 @@ object FormatManager {
             loadFromDefaultAsset()
             save()
         } catch (e: IOException) {
-            LOGGER.error("FATAL: Could not load default format from assets! The mod may not function correctly.", e)
+            PridgeLogger.error("FATAL: Could not load default format from assets! The mod may not function correctly.", e)
             // If loading from assets fails, create an empty format as a last resort.
             this.config = ChatFormat()
         } finally {
@@ -127,7 +125,7 @@ object FormatManager {
     fun loadFromGithub() {
         val format = UrlContentFetcher.fetchContentFromURL(CONFIG_I.developerCategory.formatURL)
         this.config = if (format == null) {
-            LOGGER.error("Failed to load format from GitHub. The URL may be incorrect or the content is not accessible.")
+            PridgeLogger.error("Failed to load format from GitHub. The URL may be incorrect or the content is not accessible.")
             null
         } else {
             GSON.fromJson(format, ChatFormat::class.java)
@@ -144,7 +142,7 @@ object FormatManager {
 
         Pridge::class.java.getClassLoader().getResourceAsStream(assetPath).use { stream ->
             this.config = if (stream == null) {
-                LOGGER.error("Default format asset not found at path: $assetPath")
+                PridgeLogger.error("Default format asset not found at path: $assetPath")
                 ChatFormat()
             } else {
                 try {
@@ -152,7 +150,7 @@ object FormatManager {
                         GSON.fromJson(reader, ChatFormat::class.java)
                     }
                 } catch (e: Exception) {
-                    LOGGER.error("Failed to read default format asset from path: $assetPath", e)
+                    PridgeLogger.error("Failed to read default format asset from path: $assetPath", e)
                     ChatFormat()
                 }
             }
@@ -172,16 +170,14 @@ object FormatManager {
         for (rule in config!!.formats) {
             val result = rule.process(inputText)
             if (result != null) {
-                if (CONFIG_I.developerCategory.devEnabled) {
-                    LOGGER.info("Ran the format rule: $rule")
-                }
+                PridgeLogger.dev("Ran the format rule: $rule")
                 return result
             }
         }
 
         // If we get here, it means the loop finished and no rule returned a non-null result.
         // In this case, we return the original text as the fallback.
-        LOGGER.warn("No rule found to format message: $inputText")
+        PridgeLogger.warn("No rule found to format message: $inputText")
         return FormatResult(inputText)
     }
 }

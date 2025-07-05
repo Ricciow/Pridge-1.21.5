@@ -1,11 +1,11 @@
 package io.github.ricciow.sounds
 
-import io.github.ricciow.Pridge.Companion.CONFIG_DIR
-import io.github.ricciow.Pridge.Companion.CONFIG_I
-import io.github.ricciow.Pridge.Companion.MOD_ID
-import io.github.ricciow.Pridge.Companion.mc
+import io.github.ricciow.Pridge.CONFIG_DIR
+import io.github.ricciow.Pridge.CONFIG_I
+import io.github.ricciow.Pridge.MOD_ID
+import io.github.ricciow.Pridge.mc
+import io.github.ricciow.util.PridgeLogger
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.client.realms.RealmsError.LOGGER
 import net.minecraft.client.sound.PositionedSoundInstance
 import net.minecraft.sound.SoundEvent
 import net.minecraft.util.Identifier
@@ -27,7 +27,7 @@ object DynamicSoundPlayer {
 
     fun play(fileName: String) {
         if (!Files.exists(soundsDir.resolve("$fileName.ogg"))) {
-            LOGGER.warn("Attempted to play a dynamic sound that does not exist: $fileName")
+            PridgeLogger.warn("Attempted to play a dynamic sound that does not exist: $fileName")
             return
         }
 
@@ -70,7 +70,7 @@ object DynamicSoundPlayer {
                 }
             }
         } catch (e: IOException) {
-            LOGGER.error("Failed to copy asset files:", e)
+            PridgeLogger.error("Failed to copy asset files:", e)
         }
     }
 
@@ -81,7 +81,7 @@ object DynamicSoundPlayer {
                 ?.map { it.nameWithoutExtension }
                 ?: emptyList()
         } catch (e: IOException) {
-            LOGGER.error("Error listing sound files", e)
+            PridgeLogger.error("Error listing sound files", e)
             emptyList()
         }
 
@@ -96,9 +96,7 @@ object DynamicSoundPlayer {
         getSoundNames().firstOrNull { soundName ->
             message.contains("*${soundName.replace("_", " ")}*")
         }?.let {
-            if (CONFIG_I.developerCategory.devEnabled) {
-                LOGGER.info("Played $it sound for the message: $message")
-            }
+            PridgeLogger.log("Played $it sound for the message: $message")
             play(it)
         }
     }

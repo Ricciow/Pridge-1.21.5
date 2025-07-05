@@ -1,10 +1,11 @@
 package io.github.ricciow.format
 
-import io.github.ricciow.Pridge.Companion.CONFIG_I
-import io.github.ricciow.Pridge.Companion.LOGGER
+import io.github.ricciow.Pridge.CONFIG_I
 import io.github.ricciow.util.ColorCode
+import io.github.ricciow.util.PridgeLogger
 import io.github.ricciow.util.TextParser.parse
 import io.github.ricciow.util.UrlFormatter
+import io.github.ricciow.util.toText
 import net.minecraft.text.ClickEvent.OpenUrl
 import net.minecraft.text.HoverEvent.ShowText
 import net.minecraft.text.Style
@@ -82,17 +83,18 @@ object SpecialFunctions {
     private fun formatLink(originalText: String, matcher: Matcher): Text {
         if (CONFIG_I.linkCategory.enabled) {
             var representation = CONFIG_I.linkCategory.representation
+            val group = matcher.group(1)
             val url = try {
-                UrlFormatter.decode(matcher.group(1))
+                UrlFormatter.decode(group)
             } catch (e: Exception) {
-                LOGGER.error("Failed to decode URL: ${matcher.group(1)}", e)
+                PridgeLogger.error("Failed to decode URL: $group", e)
                 representation = "&a&l[Failed to decode URL]"
                 "https://github.com/Ricciow/Pridge-1.21.5/issues"
             }
             return parse(representation).apply {
                 style = Style.EMPTY
                     .withClickEvent(OpenUrl(URI(url)))
-                    .withHoverEvent(ShowText(Text.literal(url)))
+                    .withHoverEvent(ShowText(url.toText()))
             }
         }
 
@@ -109,9 +111,7 @@ object SpecialFunctions {
         val minutesStr = timeFunc(minutes, "m")
         val secondsStr = timeFunc(seconds, "s")
 
-        val result = String.format("&eNext %s contest in%s%s%s", crop, hoursStr, minutesStr, secondsStr)
-
-        return FormatResult(result, botText = true)
+        return FormatResult("&eNext $crop contest in&f$hoursStr$minutesStr$secondsStr", botText = true)
     }
 
     private fun contest2Handler(originalText: String, matcher: Matcher): FormatResult {
@@ -128,9 +128,10 @@ object SpecialFunctions {
         val minutesStr = timeFunc(minutes, "m")
         val secondsStr = timeFunc(seconds, "s")
 
-        val result =
-            "\n &a&lActive Contest\n &6$crop1, $crop2, $crop3\n&eNext $nextCrop contest in&f$hoursStr$minutesStr$secondsStr"
-        return FormatResult(result, botText = true)
+        return FormatResult(
+            "\n &a&lActive Contest\n &6$crop1, $crop2, $crop3\n&eNext $nextCrop contest in&f$hoursStr$minutesStr$secondsStr",
+            botText = true
+        )
     }
 
     private fun contest3Handler(originalText: String, matcher: Matcher): FormatResult {
@@ -149,10 +150,10 @@ object SpecialFunctions {
         val minutesStr = timeFunc(minutes, "m")
         val secondsStr = timeFunc(seconds, "s")
 
-        val result =
-            " &a&lActive Contest\n &6$crop1, $crop2, $crop3\n&eNext: \n &6$crop4, $crop5, $crop6\n &eIn&f$hoursStr$minutesStr$secondsStr"
-
-        return FormatResult(result, botText = true)
+        return FormatResult(
+            " &a&lActive Contest\n &6$crop1, $crop2, $crop3\n&eNext: \n &6$crop4, $crop5, $crop6\n &eIn&f$hoursStr$minutesStr$secondsStr",
+            botText = true
+        )
     }
 
     private fun contest4Handler(originalText: String, matcher: Matcher): FormatResult {
@@ -167,9 +168,10 @@ object SpecialFunctions {
         val minutesStr = timeFunc(minutes, "m")
         val secondsStr = timeFunc(seconds, "s")
 
-        val result = " &e&lNext:\n &6$crop1, $crop2, $crop3\n &eIn&f$hoursStr$minutesStr$secondsStr"
-
-        return FormatResult(result, botText = true)
+        return FormatResult(
+            " &e&lNext:\n &6$crop1, $crop2, $crop3\n &eIn&f$hoursStr$minutesStr$secondsStr",
+            botText = true
+        )
     }
 
     private fun bestiaryHandler(originalText: String, matcher: Matcher): FormatResult {
@@ -253,9 +255,10 @@ object SpecialFunctions {
 
         val str = if (num.toInt() > 0) "&a&lPro" else "&4&l0"
 
-        val result = "&f&l$user (&f&l$profile)&6&l:\n &6&l$mob - &f&l$num&e&l/&f&l0 &e&l($str&e&l)"
-
-        return FormatResult(result, botText = true)
+        return FormatResult(
+            "&f&l$user (&f&l$profile)&6&l:\n &6&l$mob - &f&l$num&e&l/&f&l0 &e&l($str&e&l)",
+            botText = true
+        )
     }
 
     private fun collectionHandler(originalText: String, matcher: Matcher): FormatResult {

@@ -1,7 +1,5 @@
 package io.github.ricciow
 
-import com.mojang.brigadier.Command
-import io.github.notenoughupdates.moulconfig.common.IMinecraft
 import io.github.notenoughupdates.moulconfig.managed.ManagedConfig
 import io.github.ricciow.command.CommandManager
 import io.github.ricciow.config.PridgeConfig
@@ -9,29 +7,32 @@ import io.github.ricciow.format.FormatManager
 import io.github.ricciow.format.SpecialFunctions
 import io.github.ricciow.rendering.ImagePreviewRenderer
 import io.github.ricciow.sounds.DynamicSoundPlayer
-import io.github.ricciow.util.message.PagedMessageFactory
+import io.github.ricciow.util.PridgeLogger
 import kotlinx.io.IOException
 import net.fabricmc.api.ClientModInitializer
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal
 import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback
 import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.MinecraftClient
 import net.minecraft.util.Identifier
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 
-class Pridge : ClientModInitializer {
-    private val pridgeScheduler = Executors.newSingleThreadScheduledExecutor()
+object Pridge : ClientModInitializer {
+    const val MOD_ID = "pridge"
+    val CONFIG_DIR: Path = FabricLoader.getInstance().configDir.resolve(MOD_ID)
+
+    inline val mc: MinecraftClient
+        get() = MinecraftClient.getInstance()
+
+    lateinit var CONFIG: ManagedConfig<PridgeConfig>
+    inline val CONFIG_I: PridgeConfig
+        get() = CONFIG.instance // since instance is mutable, we cant just have it as a variable
 
     override fun onInitializeClient() {
-        LOGGER.info("[Pridge] Initializing...")
-
         initializeConfig()
+
+        PridgeLogger.info("Initializing...")
 
         // Initialize object data
         FormatManager.initialize()
@@ -43,7 +44,7 @@ class Pridge : ClientModInitializer {
         try {
             Files.createDirectories(CONFIG_DIR.resolve("sounds"))
         } catch (e: IOException) {
-            LOGGER.error("Failed to create sounds directory: ${e.message}", e)
+            PridgeLogger.error("Failed to create sounds directory: ${e.message}", e)
         }
 
         val imagePreviewLayer = Identifier.of("image-preview-mod", "preview-layer")
@@ -53,7 +54,7 @@ class Pridge : ClientModInitializer {
             layeredDrawer.attachLayerAfter(IdentifiedLayer.CHAT, imagePreviewLayer, imagePreviewRenderer::onHudRender)
         }
 
-        LOGGER.info("[Pridge] Initialized successfully!")
+        PridgeLogger.info("Initialized successfully!")
     }
 
     private fun initializeConfig() {
@@ -64,7 +65,7 @@ class Pridge : ClientModInitializer {
 
         //Add saving logic every 60s
 //        val saveTask = Runnable {
-//            LOGGER.info("Performing scheduled config save...")
+//            PridgeLogger.info("Performing scheduled config save...")
 //            CONFIG.saveToFile()
 //        }
 //
@@ -72,21 +73,8 @@ class Pridge : ClientModInitializer {
 
         //Add shutdown Hook to save the config
         Runtime.getRuntime().addShutdownHook(Thread {
-            LOGGER.info("Pridge shutting down, saving config...")
+            PridgeLogger.info("Pridge shutting down, saving config...")
             CONFIG.saveToFile()
         })
-    }
-
-    companion object {
-        const val MOD_ID = "pridge"
-        val LOGGER: Logger = LoggerFactory.getLogger(MOD_ID)
-        val CONFIG_DIR: Path = FabricLoader.getInstance().configDir.resolve(MOD_ID)
-
-        val mc: MinecraftClient
-            get() = MinecraftClient.getInstance()
-
-        lateinit var CONFIG: ManagedConfig<PridgeConfig>
-        val CONFIG_I: PridgeConfig
-            get() = CONFIG.instance // since instance is mutable, we cant just have it as a variable
     }
 }

@@ -8,13 +8,9 @@ interface IChatHudLine {
     fun `pridge$setIdentifier`(identifier: Int)
 }
 
-fun ChatHudLine.getPridgeIdentifier(): Int {
-    return cast().`pridge$getIdentifier`()
-}
-
-fun ChatHudLine.setPridgeIdentifier(identifier: Int) {
-    cast().`pridge$setIdentifier`(identifier)
-}
+inline var ChatHudLine.pridgeId
+    get() = cast().`pridge$getIdentifier`()
+    set(value) = cast().`pridge$setIdentifier`(value)
 
 fun ChatHudLine.cast(): IChatHudLine {
     return this as IChatHudLine

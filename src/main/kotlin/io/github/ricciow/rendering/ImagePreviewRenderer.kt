@@ -1,7 +1,7 @@
 package io.github.ricciow.rendering
 
-import io.github.ricciow.Pridge.Companion.LOGGER
-import io.github.ricciow.Pridge.Companion.mc
+import io.github.ricciow.Pridge.mc
+import io.github.ricciow.util.PridgeLogger
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.client.render.RenderTickCounter
@@ -28,9 +28,7 @@ class ImagePreviewRenderer {
     private var hasTexture = false
 
     fun onHudRender(drawContext: DrawContext, tickCounter: RenderTickCounter) {
-        val chatHud = mc.inGameHud.chatHud
-
-        if (!chatHud.isChatFocused) {
+        if (!mc.inGameHud.chatHud.isChatFocused) {
             if (this.hasTexture) {
                 clearTexture()
             }
@@ -39,7 +37,7 @@ class ImagePreviewRenderer {
 
         val mouseX = mc.mouse.x * mc.window.scaledWidth.toDouble() / mc.window.width
         val mouseY = mc.mouse.y * mc.window.scaledHeight.toDouble() / mc.window.height
-        val style = chatHud.getTextStyleAt(mouseX, mouseY)
+        val style = mc.inGameHud.chatHud.getTextStyleAt(mouseX, mouseY)
 
         var url: String? = null
         if (style != null) {
@@ -84,7 +82,7 @@ class ImagePreviewRenderer {
         var connection: HttpURLConnection? = null
 
         try {
-            val uri = URI.create(url)
+            val uri = URI(url)
             val urlConnection = uri.toURL().openConnection() as HttpURLConnection
             connection = urlConnection.apply {
                 setRequestProperty("User-Agent", "Pridge Image Previewer/1.0")
@@ -116,7 +114,7 @@ class ImagePreviewRenderer {
                 }
             }
         } catch (e: Exception) {
-            LOGGER.error("Failed to load image preview from $url: ${e.message}", e)
+            PridgeLogger.error("Failed to load image preview from $url: ${e.message}", e)
             if (url == this.loadingUrl) {
                 this.loadingUrl = null
             }

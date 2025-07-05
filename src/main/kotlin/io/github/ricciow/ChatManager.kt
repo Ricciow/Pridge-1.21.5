@@ -203,12 +203,17 @@ object ChatManager {
     }
 
     private fun checkWordFilters(message: String): Boolean {
-        val wordFilters = CONFIG_I.filtersCategory.rawFilter
-        if (wordFilters.isNotEmpty()) {
-            val filterRegex = Pattern.compile(wordFilters)
-            val filterMatches = filterRegex.matcher(message)
+        val wordFilters = try {
+            val filterStr = CONFIG_I.filtersCategory.rawFilter
+            if (filterStr.isBlank()) null
+            Regex(filterStr)
+        } catch (e: Exception) {
+            PridgeLogger.dev("Failed to compile word filters regex: ${e.message}")
+            null
+        }
 
-            if (filterMatches.find()) {
+        if (wordFilters != null) {
+            if (wordFilters.matches(message)) {
                 if (CONFIG_I.filtersCategory.placeholder) {
                     ChatUtils.sendMessage(parseHoverable("&c&lA message has been filtered.", message))
                 }

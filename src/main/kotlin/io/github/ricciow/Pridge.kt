@@ -7,9 +7,12 @@ import io.github.ricciow.format.FormatManager
 import io.github.ricciow.format.SpecialFunctions
 import io.github.ricciow.rendering.ImagePreviewRenderer
 import io.github.ricciow.sounds.DynamicSoundPlayer
+import io.github.ricciow.util.ChatUtils
 import io.github.ricciow.util.PridgeLogger
+import io.github.ricciow.util.TextParser
 import kotlinx.io.IOException
 import net.fabricmc.api.ClientModInitializer
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback
 import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer
 import net.fabricmc.loader.api.FabricLoader
@@ -76,5 +79,19 @@ object Pridge : ClientModInitializer {
             PridgeLogger.info("Pridge shutting down, saving config...")
             CONFIG.saveToFile()
         })
+
+        ClientPlayConnectionEvents.JOIN.register { _, _, _ ->
+            if (CONFIG_I.developerCategory.enabled && CONFIG_I.botCategory.ign.isEmpty()) {
+                ChatUtils.sendMessage(
+                    TextParser.parse(
+                        """
+                            &c&l[Pridge] Bridge bot IGN not configured!
+                            &c&l[Pridge] config->botCategory->ign
+                            &c&l[Pridge] It's required for full functionality.
+                        """.trimIndent()
+                    )
+                )
+            }
+        }
     }
 }

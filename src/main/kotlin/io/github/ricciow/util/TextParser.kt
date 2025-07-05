@@ -35,6 +35,10 @@ object TextParser {
         return mainText
     }
 
+    fun replaceMinecraftColorCodes(text: String): String {
+        return text.replace("§", "&")
+    }
+
     fun parseHoverable(text: String, hover: String): MutableText {
         return parse(text).apply {
             style = Style.EMPTY.withHoverEvent(ShowText(parse(hover)))

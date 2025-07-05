@@ -1,18 +1,11 @@
 package io.github.ricciow.sounds
 
-import com.mojang.brigadier.Command
-import com.mojang.brigadier.arguments.StringArgumentType
-import io.github.ricciow.CommandManager
-import io.github.ricciow.Pridge.Companion.CONFIG_DIR
-import io.github.ricciow.Pridge.Companion.CONFIG_I
-import io.github.ricciow.Pridge.Companion.MOD_ID
-import io.github.ricciow.Pridge.Companion.mc
-import io.github.ricciow.StringListSuggestionProvider
-import io.github.ricciow.util.TextParser
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal
+import io.github.ricciow.Pridge.CONFIG_DIR
+import io.github.ricciow.Pridge.CONFIG_I
+import io.github.ricciow.Pridge.MOD_ID
+import io.github.ricciow.Pridge.mc
+import io.github.ricciow.util.PridgeLogger
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.client.realms.RealmsError.LOGGER
 import net.minecraft.client.sound.PositionedSoundInstance
 import net.minecraft.sound.SoundEvent
 import net.minecraft.util.Identifier
@@ -27,41 +20,14 @@ import kotlin.io.path.nameWithoutExtension
 object DynamicSoundPlayer {
     private val soundsDir = CONFIG_DIR.resolve("sounds")
 
-    init {
+    fun initialize() {
         //Create sounds directory if it doesn't exist
         loadFromDefaultAsset()
-
-        //Create sounds command
-        CommandManager.addCommand(
-            literal("pridgesounds").then(
-                argument("sound name", StringArgumentType.greedyString())
-                    .suggests(StringListSuggestionProvider(getSoundNames()))
-                    .executes { context ->
-                        val argument = StringArgumentType.getString(context, "sound name")
-                        if (isSound(argument)) {
-                            play(argument.replace(" ", "_"))
-                            context.source.sendFeedback(TextParser.parse("&6&lPlaying sound: &e$argument"))
-                        } else {
-                            context.source.sendFeedback(TextParser.parse("&c&lSound not found"))
-                        }
-                        Command.SINGLE_SUCCESS
-                    }
-            )
-                .executes { context ->
-                    val builder = StringBuilder("&6&lAvailable Sounds: &e")
-                    builder.append(getSoundNames().joinToString("&f, &e") { name ->
-                        name.replace("_", " ")
-                    })
-
-                    context.source.sendFeedback(TextParser.parse(builder.toString()))
-                    Command.SINGLE_SUCCESS
-                }
-        )
     }
 
     fun play(fileName: String) {
         if (!Files.exists(soundsDir.resolve("$fileName.ogg"))) {
-            LOGGER.warn("Attempted to play a dynamic sound that does not exist: {}", fileName)
+            PridgeLogger.warn("Attempted to play a dynamic sound that does not exist: $fileName")
             return
         }
 
@@ -104,7 +70,7 @@ object DynamicSoundPlayer {
                 }
             }
         } catch (e: IOException) {
-            LOGGER.error("Failed to copy asset files:", e)
+            PridgeLogger.error("Failed to copy asset files:", e)
         }
     }
 
@@ -115,7 +81,7 @@ object DynamicSoundPlayer {
                 ?.map { it.nameWithoutExtension }
                 ?: emptyList()
         } catch (e: IOException) {
-            LOGGER.error("Error listing sound files", e)
+            PridgeLogger.error("Error listing sound files", e)
             emptyList()
         }
 
@@ -130,9 +96,7 @@ object DynamicSoundPlayer {
         getSoundNames().firstOrNull { soundName ->
             message.contains("*${soundName.replace("_", " ")}*")
         }?.let {
-            if (CONFIG_I.developerCategory.devEnabled) {
-                LOGGER.info("Played {} sound for the message: {}", it, message)
-            }
+            PridgeLogger.log("Played $it sound for the message: $message")
             play(it)
         }
     }

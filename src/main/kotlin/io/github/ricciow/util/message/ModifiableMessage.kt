@@ -1,39 +1,20 @@
 package io.github.ricciow.util.message
 
-import io.github.ricciow.Pridge.Companion.LOGGER
-import io.github.ricciow.Pridge.Companion.mc
-import net.minecraft.client.gui.hud.ChatHud
+import io.github.ricciow.util.ChatUtils
 import net.minecraft.text.Text
 
-class ModifiableMessage(private var text: Text?, private val id: String) {
-    private val chatHud: ChatHud? = mc.inGameHud.chatHud
-    private var sent = false
+class ModifiableMessage(private var text: Text, private val id: Int) {
 
     init {
-        updateMessage()
+        updateMessage(false)
     }
 
     fun modify(text: Text) {
         this.text = text
-        updateMessage()
+        updateMessage(true)
     }
 
-    private fun updateMessage() {
-        if (text == null || chatHud == null) {
-            val nullThing = when (text) {
-                null if chatHud == null -> "text and chatHud"
-                null -> "text"
-                else -> "chatHud"
-            }
-            LOGGER.warn("$nullThing is null, not updating/sending ModifiableMessage")
-            return
-        }
-
-        if (sent) {
-            chatHud.replaceIdentifiableMessage(id, text!!)
-        } else {
-            chatHud.addIdentifiableMessage(id, text!!)
-            sent = true
-        }
+    private fun updateMessage(replaceExisting: Boolean) {
+        ChatUtils.sendMessage(text, id, replaceExisting)
     }
 }

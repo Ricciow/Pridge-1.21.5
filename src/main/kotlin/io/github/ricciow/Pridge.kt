@@ -1,45 +1,55 @@
 package io.github.ricciow
 
-import com.mojang.brigadier.Command
-import io.github.notenoughupdates.moulconfig.common.IMinecraft
 import io.github.notenoughupdates.moulconfig.managed.ManagedConfig
+import io.github.ricciow.command.CommandManager
 import io.github.ricciow.config.PridgeConfig
 import io.github.ricciow.format.FormatManager
+import io.github.ricciow.format.SpecialFunctions
 import io.github.ricciow.rendering.ImagePreviewRenderer
-import io.github.ricciow.util.message.PagedMessageFactory
+import io.github.ricciow.sounds.DynamicSoundPlayer
+import io.github.ricciow.util.BOT_IGN_MISSING
+import io.github.ricciow.util.ChatUtils
+import io.github.ricciow.util.PridgeLogger
+import io.github.ricciow.util.TextParser
 import kotlinx.io.IOException
 import net.fabricmc.api.ClientModInitializer
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback
 import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.MinecraftClient
 import net.minecraft.util.Identifier
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 
-class Pridge : ClientModInitializer {
-    private val pridgeScheduler = Executors.newSingleThreadScheduledExecutor()
+object Pridge : ClientModInitializer {
+    const val MOD_ID = "pridge"
+    val CONFIG_DIR: Path = FabricLoader.getInstance().configDir.resolve(MOD_ID)
+
+    inline val mc: MinecraftClient
+        get() = MinecraftClient.getInstance()
+
+    lateinit var CONFIG: ManagedConfig<PridgeConfig>
+    inline val CONFIG_I: PridgeConfig
+        get() = CONFIG.instance // since instance is mutable, we cant just have it as a variable
 
     override fun onInitializeClient() {
-        LOGGER.info("[Pridge] Initializing...")
-
         initializeConfig()
 
-        PagedMessageFactory.initialize()
+        PridgeLogger.info("Initializing...")
 
+        // Initialize object data
         FormatManager.initialize()
-
-        ChatManager.register()
+        ChatManager.initialize()
+        DynamicSoundPlayer.initialize()
+        SpecialFunctions.initialize()
+        CommandManager.initialize()
 
         try {
             Files.createDirectories(CONFIG_DIR.resolve("sounds"))
         } catch (e: IOException) {
-            LOGGER.error("Failed to create sounds directory: ${e.message}", e)
+            PridgeLogger.error("Failed to create sounds directory: ${e.message}", e)
         }
 
         val imagePreviewLayer = Identifier.of("image-preview-mod", "preview-layer")
@@ -49,9 +59,7 @@ class Pridge : ClientModInitializer {
             layeredDrawer.attachLayerAfter(IdentifiedLayer.CHAT, imagePreviewLayer, imagePreviewRenderer::onHudRender)
         }
 
-        CommandManager.register()
-
-        LOGGER.info("[Pridge] Initialized successfully!")
+        PridgeLogger.info("Initialized successfully!")
     }
 
     private fun initializeConfig() {
@@ -60,38 +68,24 @@ class Pridge : ClientModInitializer {
 
         CONFIG = ManagedConfig.create(configFile, PridgeConfig::class.java)
 
-        CommandManager.addCommand(
-            literal("pridge").executes { context ->
-                mc.send { IMinecraft.instance.openWrappedScreen(CONFIG.getEditor()) }
-                Command.SINGLE_SUCCESS
-            }
-        )
-
-        //Add saving logic every 60s
-        val saveTask = Runnable {
-            LOGGER.info("Performing scheduled config save...")
+        //Add shutdown Hook to save the config
+        ClientLifecycleEvents.CLIENT_STOPPING.register { _ ->
+            PridgeLogger.info("Shutting down, saving config...")
             CONFIG.saveToFile()
         }
 
-        pridgeScheduler.scheduleAtFixedRate(saveTask, 60, 60, TimeUnit.SECONDS)
-
-        //Add shutdown Hook to save the config
-        Runtime.getRuntime().addShutdownHook(Thread {
-            LOGGER.info("Pridge shutting down, saving config...")
-            CONFIG.saveToFile()
-        })
-    }
-
-    companion object {
-        const val MOD_ID = "pridge"
-        val LOGGER: Logger = LoggerFactory.getLogger(MOD_ID)
-        val CONFIG_DIR: Path = FabricLoader.getInstance().configDir.resolve(MOD_ID)
-
-        val mc: MinecraftClient
-            get() = MinecraftClient.getInstance()
-
-        lateinit var CONFIG: ManagedConfig<PridgeConfig>
-        val CONFIG_I: PridgeConfig
-            get() = CONFIG.instance // since instance is mutable, we cant just have it as a variable
+        ClientPlayConnectionEvents.JOIN.register { _, _, _ ->
+            if (CONFIG_I.developerCategory.enabled && CONFIG_I.botCategory.ign.isEmpty()) {
+                ChatUtils.sendMessage(
+                    TextParser.parse(
+                        """
+                            &c&l[Pridge] Bridge bot IGN not configured!
+                            &c&l[Pridge] config->botCategory->ign
+                            &c&l[Pridge] It's required for full functionality.
+                        """.trimIndent()
+                    ), BOT_IGN_MISSING
+                )
+            }
+        }
     }
 }

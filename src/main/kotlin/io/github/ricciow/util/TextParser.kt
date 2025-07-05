@@ -13,7 +13,7 @@ object TextParser {
      * @return A MutableText object with proper formatting.
      */
     fun parse(text: String): MutableText {
-        val mainText = Text.literal("")
+        val mainText = "".toText()
         val parts = text.split("(?=[&§])".toRegex()) // Split before each '&' but keep it.
         var currentStyle = Style.EMPTY
 
@@ -27,9 +27,9 @@ object TextParser {
                         currentStyle.withFormatting(formatting)
                     }
                 }
-                mainText.append(Text.literal(part.substring(2)).setStyle(currentStyle))
+                mainText.append(part.substring(2).toText(currentStyle))
             } else {
-                mainText.append(Text.literal(part).setStyle(currentStyle))
+                mainText.append(part.toText(currentStyle))
             }
         }
         return mainText

@@ -1,106 +1,97 @@
 package io.github.ricciow.util.message
 
+import io.github.ricciow.util.toText
 import net.minecraft.text.ClickEvent.RunCommand
 import net.minecraft.text.HoverEvent.ShowText
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.text.TextColor
-import java.util.*
 
 class PagedMessage {
-    private val prefix: Text?
+    val id: Int
+    private val prefix: Text
     private val pages: MutableList<Text>
     private val titles: MutableList<Text>
     private val arrowColor: TextColor
     private val disabledArrowColor: TextColor
     private var pageIndex = 0
     private val message: ModifiableMessage
-    private val id: String
-    private var disabled = false
 
+    // Single title constructor
     internal constructor(
         pages: MutableList<Text>,
         title: Text,
         arrowColor: TextColor,
-        disabledArrowColor: TextColor?,
-        prefix: Text?
+        disabledArrowColor: TextColor,
+        prefix: Text
     ) {
         this.pages = pages
         this.titles = mutableListOf(title)
         this.arrowColor = arrowColor
-        this.disabledArrowColor = disabledArrowColor ?: arrowColor
-        this.id = UUID.randomUUID().toString()
+        this.disabledArrowColor = disabledArrowColor
         this.prefix = prefix
-        message = ModifiableMessage(buildText(), id)
+
+        this.id = hashCode()
+        this.message = ModifiableMessage(buildText(), id)
     }
 
+    // Multi-title constructor
     internal constructor(
         pages: MutableList<Text>,
         titles: MutableList<Text>,
         arrowColor: TextColor,
-        disabledArrowColor: TextColor?,
-        prefix: Text?
+        disabledArrowColor: TextColor,
+        prefix: Text
     ) {
         this.pages = pages
         this.titles = titles
         this.arrowColor = arrowColor
-        this.disabledArrowColor = disabledArrowColor ?: arrowColor
-        this.id = UUID.randomUUID().toString()
+        this.disabledArrowColor = disabledArrowColor
         this.prefix = prefix
-        message = ModifiableMessage(buildText(), id)
+
+        this.id = hashCode()
+        this.message = ModifiableMessage(buildText(), id)
     }
 
     private fun buildText(): Text {
         var title: Text? = null
         if (pageIndex in 0 until pages.size) {
-            title = titles.getOrNull(pageIndex) ?: titles.firstOrNull() ?: Text.literal("No title found")
+            title = titles.getOrNull(pageIndex) ?: titles.firstOrNull() ?: "No title found".toText()
         }
 
-        val baseText = if (prefix != null) prefix.copy() else Text.literal("")
-        baseText.append(Text.literal("<< ").setStyle(buildLeftStyle()))
+        val baseText = prefix.copy()
+        baseText.append("<< ".toText(buildLeftStyle()))
         baseText.append(title)
-        baseText.append(Text.literal(" >>").setStyle(buildRightStyle()))
+        baseText.append(" >>".toText(buildRightStyle()))
         baseText.append("\n")
         baseText.append(pages[pageIndex])
 
         return baseText
     }
 
-    private fun buildLeftStyle(): Style? {
+    private fun buildLeftStyle(): Style {
         val baseStyle = Style.EMPTY.withColor(disabledArrowColor)
-        if (disabled) {
-            return baseStyle.withHoverEvent(ShowText(Text.literal("Paging Disabled")))
-        }
 
-        if (pageIndex != 0) {
-            return baseStyle
-                .withColor(arrowColor)
-                .withClickEvent(RunCommand("pagedmessage left"))
-                .withHoverEvent(ShowText(Text.literal("Previous page")))
+        return if (pageIndex != 0) {
+            baseStyle.withColor(arrowColor)
+                .withClickEvent(RunCommand("pagedmessage $id left"))
+                .withHoverEvent(ShowText("Previous page".toText()))
+        } else {
+            baseStyle.withHoverEvent(ShowText("No pages to the Left!".toText()))
         }
-
-        return baseStyle.withHoverEvent(ShowText(Text.literal("No pages to the Left!")))
     }
 
-    private fun buildRightStyle(): Style? {
+    private fun buildRightStyle(): Style {
         val baseStyle = Style.EMPTY.withColor(disabledArrowColor)
-        if (disabled) {
-            return baseStyle.withHoverEvent(ShowText(Text.literal("Paging Disabled")))
-        }
 
         if (pageIndex < pages.size - 1) {
             return baseStyle
                 .withColor(arrowColor)
-                .withClickEvent(RunCommand("pagedmessage right"))
-                .withHoverEvent(ShowText(Text.literal("Next page")))
+                .withClickEvent(RunCommand("pagedmessage $id right"))
+                .withHoverEvent(ShowText("Next page".toText()))
         }
 
-        return baseStyle.withHoverEvent(ShowText(Text.literal("No pages to the Right!")))
-    }
-
-    fun disablePaging() {
-        disabled = true
-        message.modify(buildText())
+        return baseStyle.withHoverEvent(ShowText("No pages to the Right!".toText()))
     }
 
     fun setPage(page: Int) {
@@ -116,13 +107,36 @@ class PagedMessage {
         }
     }
 
-    fun lastPage() {
+    fun previousPage() {
         if (pageIndex > 0) {
             setPage(pageIndex - 1)
         }
     }
 
     override fun toString(): String {
-        return "Paged Message with id: $id"
+        val titleAndPageList = titles.mapIndexed { index, text ->
+            """
+            {
+                Title ${index + 1}: ${text.string}
+                Page ${index + 1}: ${pages.getOrNull(index)?.string ?: "No page available"}
+            }
+            """.trimIndent()
+        }
+
+
+        val toString =
+        """
+        PagedMessage: {
+            ID: $id
+            Prefix: ${prefix.string}
+            Pages: {
+                ${titleAndPageList.joinToString("\n")}
+            }
+            Current Page Index: $pageIndex
+            Arrow Color: ${arrowColor.name}
+            Disabled Arrow Color: ${disabledArrowColor.name}
+        }
+        """.trimIndent()
+        return toString
     }
 }

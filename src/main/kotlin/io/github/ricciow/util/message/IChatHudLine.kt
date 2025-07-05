@@ -3,18 +3,14 @@ package io.github.ricciow.util.message
 import net.minecraft.client.gui.hud.ChatHudLine
 
 interface IChatHudLine {
-    fun `pridge$getIdentifier`(): String?
+    fun `pridge$getIdentifier`(): Int
 
-    fun `pridge$setIdentifier`(identifier: String?)
+    fun `pridge$setIdentifier`(identifier: Int)
 }
 
-fun ChatHudLine.getPridgeIdentifier(): String? {
-    return cast().`pridge$getIdentifier`()
-}
-
-fun ChatHudLine.setPridgeIdentifier(identifier: String?) {
-    cast().`pridge$setIdentifier`(identifier)
-}
+inline var ChatHudLine.pridgeId
+    get() = cast().`pridge$getIdentifier`()
+    set(value) = cast().`pridge$setIdentifier`(value)
 
 fun ChatHudLine.cast(): IChatHudLine {
     return this as IChatHudLine

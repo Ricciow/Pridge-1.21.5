@@ -16,7 +16,7 @@ class BotCategory {
     @ConfigOption(name = "Bot IGN", desc = "The username of the bot being utilized")
     @ConfigEditorText
     @JvmField
-    var ign = "NqekMyBeloved"
+    var ign = ""
 
     @Expose
     @ConfigOption(

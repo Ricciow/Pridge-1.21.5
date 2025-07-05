@@ -53,7 +53,7 @@ object UrlFormatter {
         encodedUrl.forEach { char ->
             val value = CHAR_TO_INT_MAP[char]
                 ?: throw IllegalArgumentException("Encoded data contains an invalid character: '$char'")
-            number = number.multiply(BASE).add(BigInteger.valueOf(value.toLong()))
+            number = number.multiply(BASE).add(BigInteger.valueOf(value))
         }
 
         val compressedBytes = number.toByteArray()

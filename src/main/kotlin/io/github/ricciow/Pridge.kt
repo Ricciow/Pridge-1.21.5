@@ -7,11 +7,13 @@ import io.github.ricciow.format.FormatManager
 import io.github.ricciow.format.SpecialFunctions
 import io.github.ricciow.rendering.ImagePreviewRenderer
 import io.github.ricciow.sounds.DynamicSoundPlayer
+import io.github.ricciow.util.BOT_IGN_MISSING
 import io.github.ricciow.util.ChatUtils
 import io.github.ricciow.util.PridgeLogger
 import io.github.ricciow.util.TextParser
 import kotlinx.io.IOException
 import net.fabricmc.api.ClientModInitializer
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback
 import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer
@@ -75,10 +77,10 @@ object Pridge : ClientModInitializer {
 //        pridgeScheduler.scheduleAtFixedRate(saveTask, 60, 60, TimeUnit.SECONDS)
 
         //Add shutdown Hook to save the config
-        Runtime.getRuntime().addShutdownHook(Thread {
-            PridgeLogger.info("Pridge shutting down, saving config...")
+        ClientLifecycleEvents.CLIENT_STOPPING.register { _ ->
+            PridgeLogger.info("Shutting down, saving config...")
             CONFIG.saveToFile()
-        })
+        }
 
         ClientPlayConnectionEvents.JOIN.register { _, _, _ ->
             if (CONFIG_I.developerCategory.enabled && CONFIG_I.botCategory.ign.isEmpty()) {
@@ -89,7 +91,7 @@ object Pridge : ClientModInitializer {
                             &c&l[Pridge] config->botCategory->ign
                             &c&l[Pridge] It's required for full functionality.
                         """.trimIndent()
-                    )
+                    ), BOT_IGN_MISSING
                 )
             }
         }

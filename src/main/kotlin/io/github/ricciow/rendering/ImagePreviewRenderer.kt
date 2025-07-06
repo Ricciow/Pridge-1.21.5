@@ -16,7 +16,6 @@ import java.net.HttpURLConnection
 import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.CompletableFuture
-import java.util.regex.Pattern
 
 class ImagePreviewRenderer {
 
@@ -124,14 +123,9 @@ class ImagePreviewRenderer {
     }
 
     private fun extractImageUrl(html: String, baseUrl: String): String? {
-        val matcher = OGP_IMAGE_REGEX.matcher(html)
         val imageUrl = when {
-            matcher.find() -> matcher.group("url")
-            IMG_TAG_REGEX.matcher(html).find() -> IMG_TAG_REGEX.matcher(html).run {
-                find()
-                group("url")
-            }
-
+            OGP_IMAGE_REGEX.find(html) != null -> OGP_IMAGE_REGEX.find(html)!!.groups["url"]?.value
+            IMG_TAG_REGEX.find(html) != null -> IMG_TAG_REGEX.find(html)!!.groups["url"]?.value
             else -> null
         } ?: return null
 
@@ -201,9 +195,8 @@ class ImagePreviewRenderer {
     }
 
     companion object {
-        private val OGP_IMAGE_REGEX =
-            Pattern.compile("<meta property=\"(?:og:image|twitter:image)\" content=\"(?<url>.+?)\".*?/?>")
-        private val IMG_TAG_REGEX = Pattern.compile("<img.*?src=\"(?<url>.+?)\".*?>")
+        private val OGP_IMAGE_REGEX = Regex("<meta property=\"(?:og:image|twitter:image)\" content=\"(?<url>.+?)\".*?/?>")
+        private val IMG_TAG_REGEX = Regex("<img.*?src=\"(?<url>.+?)\".*?>")
         private val PREVIEW_TEXTURE_ID = Identifier.of("image_preview", "preview_texture")
     }
 }

@@ -1,23 +1,46 @@
 package io.github.ricciow.format
 
 import com.google.gson.GsonBuilder
-import com.google.gson.JsonSyntaxException
 import io.github.ricciow.Pridge
 import io.github.ricciow.Pridge.CONFIG_DIR
 import io.github.ricciow.Pridge.CONFIG_I
 import io.github.ricciow.Pridge.MOD_ID
+import io.github.ricciow.Pridge.VERSION
+import io.github.ricciow.util.ChatUtils
 import io.github.ricciow.util.PridgeLogger
+import io.github.ricciow.util.TextParser
 import io.github.ricciow.util.UrlContentFetcher
-import java.io.FileReader
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
+import java.io.File
 import java.io.FileWriter
 import java.io.IOException
 import java.io.InputStreamReader
 import java.net.URISyntaxException
 import java.nio.file.Files
 
+data class ChatFormat(var version: String? = "undefined", var formats: MutableList<FormatRule<*>> = mutableListOf(), var notified: Boolean = false) {
+    fun postLoad() {
+        if (!notified) {
+            notified = true
+            PridgeLogger.dev("ChatFormat initialized with version: $version and ${formats.size} rules.")
+            if (version == "undefined") {
+                ChatUtils.sendMessage(TextParser.parse("&c&l[Pridge] Failed to parse chat format file."))
+            } else if (VERSION != version) {
+                ChatUtils.sendMessage(TextParser.parse(
+                    """
+                            &c&l[Pridge] This version of the chat format file
+                            &c&l[Pridge] was designed for version $version of the mod,
+                            &c&l[Pridge] but you are using version ${VERSION}.
+                        """.trimIndent()
+                ))
+            }
+        }
+    }
+}
+
 object FormatManager {
     private val configFile = CONFIG_DIR.resolve(MOD_ID).resolve("formats.json")
-    var config: ChatFormat? = null
+    lateinit var config: ChatFormat
 
     private val GSON = GsonBuilder()
         .registerTypeAdapterFactory(
@@ -39,11 +62,7 @@ object FormatManager {
             PridgeLogger.info("Loaded formattings from GitHub")
 
             //Initialize Patterns
-            if (config != null) {
-                for (rule in config!!.formats) {
-                    rule.initialize()
-                }
-            }
+            config.formats.forEach { it.initialize() }
         } catch (e: IOException) {
             PridgeLogger.error("Failed to load from github:", e)
         } catch (e: URISyntaxException) {
@@ -52,42 +71,39 @@ object FormatManager {
     }
 
     fun loadFromConfigAndSave() {
-        if (Files.exists(configFile)) {
-            try {
-                FileReader(configFile.toFile()).use { reader ->
-                    PridgeLogger.info("Loading existing format file...")
-                    config = GSON.fromJson(reader, ChatFormat::class.java)
-                    if (config == null) {
-                        throw IOException("Format file is empty or corrupted.")
-                    }
-                    PridgeLogger.info("Format loaded successfully.")
-
-                    //Initialize Patterns
-                    if (config != null) {
-                        for (rule in config!!.formats) {
-                            rule.initialize()
-                        }
-                    }
-                }
-            } catch (e: IOException) {
-                PridgeLogger.error("Failed to load format file! Creating a new default format from asset.", e)
-                loadFromDefaultAssetAndSave()
-            } catch (e: JsonSyntaxException) {
-                PridgeLogger.error("Failed to load format file! Creating a new default format from asset.", e)
-                loadFromDefaultAssetAndSave()
-            }
-        } else {
+        val file = File(configFile.toString())
+        if (!file.exists()) {
             PridgeLogger.info("No format file found. Creating a new default format from asset...")
             loadFromDefaultAssetAndSave()
+            return
         }
+
+        try {
+            PridgeLogger.info("Loading existing format file...")
+
+            config = GSON.fromJson(file.readText(), ChatFormat::class.java)
+
+            PridgeLogger.info("Format loaded successfully.")
+            //Initialize Patterns
+            config.formats.forEach { it.initialize() }
+        } catch (e: Exception) {
+            PridgeLogger.error("Failed to load format file! Creating a new default format from asset.", e)
+            loadFromDefaultAssetAndSave()
+        }
+
     }
 
-    fun initialize() {
+    fun loadDefault() {
         if (CONFIG_I.developerCategory.autoUpdate) {
             loadFromGithubAndSave()
             return
         }
         loadFromConfigAndSave()
+    }
+
+    fun initialize() {
+        loadDefault()
+        config.postLoad()
     }
 
     fun save() {
@@ -114,11 +130,7 @@ object FormatManager {
             // If loading from assets fails, create an empty format as a last resort.
             this.config = ChatFormat()
         } finally {
-            if (config != null) {
-                for (rule in config!!.formats) {
-                    rule.initialize()
-                }
-            }
+            config.formats.forEach { it.initialize() }
         }
     }
 
@@ -126,7 +138,7 @@ object FormatManager {
         val format = UrlContentFetcher.fetchContentFromURL(CONFIG_I.developerCategory.formatURL)
         this.config = if (format == null) {
             PridgeLogger.error("Failed to load format from GitHub. The URL may be incorrect or the content is not accessible.")
-            null
+            ChatFormat()
         } else {
             GSON.fromJson(format, ChatFormat::class.java)
         }
@@ -167,7 +179,7 @@ object FormatManager {
      * @return The formatted text, or the original text if no rule matched.
      */
     fun formatText(inputText: String): FormatResult {
-        for (rule in config!!.formats) {
+        for (rule in config.formats) {
             val result = rule.process(inputText)
             if (result != null) {
                 PridgeLogger.dev("Ran the format rule: $rule")

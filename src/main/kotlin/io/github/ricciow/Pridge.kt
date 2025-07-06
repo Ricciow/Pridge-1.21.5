@@ -25,6 +25,7 @@ import java.nio.file.Path
 
 object Pridge : ClientModInitializer {
     const val MOD_ID = "pridge"
+    val VERSION: String = FabricLoader.getInstance().getModContainer(MOD_ID).get().metadata.version.friendlyString
     val CONFIG_DIR: Path = FabricLoader.getInstance().configDir.resolve(MOD_ID)
 
     inline val mc: MinecraftClient

@@ -11,13 +11,13 @@ object PridgeLogger {
 
     fun dev(message: String) {
         if (CONFIG_I.developerCategory.devEnabled) {
-            debug(message, "[Pridge Dev]")
+            info(message, "[Pridge Dev]")
         }
     }
 
     fun dev(message: String, exception: Throwable) {
         if (CONFIG_I.developerCategory.devEnabled) {
-            debug(message, exception, "[Pridge Dev]")
+            info(message, exception, "[Pridge Dev]")
         }
     }
     

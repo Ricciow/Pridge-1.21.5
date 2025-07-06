@@ -13,14 +13,11 @@ import net.minecraft.text.Text
 import net.minecraft.text.TextColor
 import net.minecraft.util.Formatting
 import java.net.URI
-import java.util.*
-import java.util.regex.Matcher
-import java.util.regex.Pattern
 
 object SpecialFunctions {
     private val registry = mutableMapOf<String, SpecialFunction>()
 
-    private val LINK_PATTERN = Pattern.compile("\\[LINK]\\((l\\$[^)]+)\\)")
+    private val LINK_PATTERN = Regex("\\[LINK]\\((l\\$[^)]+)\\)")
 
     fun initialize() {
         registry.put("discord", SpecialFunctions::discordHandler)
@@ -48,7 +45,7 @@ object SpecialFunctions {
      * @param matcher RegExp matcher to be passed through the function
      * @return String containing the result of the function or null if there isn't a function
      */
-    fun run(functionName: String, originalText: String, matcher: Matcher): FormatResult? {
+    fun run(functionName: String, originalText: String, matcher: MatchResult): FormatResult? {
         val function = get(functionName) ?: return null
         return function.run(originalText, matcher)
     }
@@ -72,7 +69,7 @@ object SpecialFunctions {
      */
     private fun capitalizeFirstLetter(str: String?): String? {
         if (str == null || str.isEmpty()) return str
-        return str.substring(0, 1).uppercase(Locale.getDefault()) + str.substring(1)
+        return str.substring(0, 1).uppercase() + str.substring(1)
     }
 
     /**
@@ -80,10 +77,10 @@ object SpecialFunctions {
      * In a real mod, this would involve creating chat components with click events.
      * @return A formatted string or null if no links are found.
      */
-    private fun formatLink(originalText: String, matcher: Matcher): Text {
+    private fun formatLink(originalText: String, matcher: MatchResult): Text {
         if (CONFIG_I.linkCategory.enabled) {
             var representation = CONFIG_I.linkCategory.representation
-            val group = matcher.group(1)
+            val group = matcher.groupValues[1]
             val url = try {
                 UrlFormatter.decode(group)
             } catch (e: Exception) {
@@ -101,11 +98,11 @@ object SpecialFunctions {
         return parse(originalText)
     }
 
-    private fun contest1Handler(originalText: String, matcher: Matcher): FormatResult {
-        val crop = matcher.group(1)
-        val hours = matcher.group(2).toInt()
-        val minutes = matcher.group(3).toInt()
-        val seconds = matcher.group(4).toInt()
+    private fun contest1Handler(originalText: String, matcher: MatchResult): FormatResult {
+        val crop = matcher.groupValues[1]
+        val hours = matcher.groupValues[2].toInt()
+        val minutes = matcher.groupValues[3].toInt()
+        val seconds = matcher.groupValues[4].toInt()
 
         val hoursStr = timeFunc(hours, "h")
         val minutesStr = timeFunc(minutes, "m")
@@ -114,15 +111,15 @@ object SpecialFunctions {
         return FormatResult("&eNext $crop contest in&f$hoursStr$minutesStr$secondsStr", botText = true)
     }
 
-    private fun contest2Handler(originalText: String, matcher: Matcher): FormatResult {
-        val crop1 = matcher.group(1)
-        val crop2 = matcher.group(2)
-        val crop3 = matcher.group(3)
+    private fun contest2Handler(originalText: String, matcher: MatchResult): FormatResult {
+        val crop1 = matcher.groupValues[1]
+        val crop2 = matcher.groupValues[2]
+        val crop3 = matcher.groupValues[3]
         // Groups 4 (minutesActive) and 5 (secondsActive) are unused in the final format string.
-        val nextCrop = matcher.group(6)
-        val hours = matcher.group(7).toInt()
-        val minutes = matcher.group(8).toInt()
-        val seconds = matcher.group(9).toInt()
+        val nextCrop = matcher.groupValues[6]
+        val hours = matcher.groupValues[7].toInt()
+        val minutes = matcher.groupValues[8].toInt()
+        val seconds = matcher.groupValues[9].toInt()
 
         val hoursStr = timeFunc(hours, "h")
         val minutesStr = timeFunc(minutes, "m")
@@ -134,17 +131,17 @@ object SpecialFunctions {
         )
     }
 
-    private fun contest3Handler(originalText: String, matcher: Matcher): FormatResult {
-        val crop1 = matcher.group(1)
-        val crop2 = matcher.group(2)
-        val crop3 = matcher.group(3)
+    private fun contest3Handler(originalText: String, matcher: MatchResult): FormatResult {
+        val crop1 = matcher.groupValues[1]
+        val crop2 = matcher.groupValues[2]
+        val crop3 = matcher.groupValues[3]
         // Groups 4 (minutesActive) and 5 (secondsActive) are unused.
-        val crop4 = matcher.group(6)
-        val crop5 = matcher.group(7)
-        val crop6 = matcher.group(8)
-        val hours = matcher.group(9).toInt()
-        val minutes = matcher.group(10).toInt()
-        val seconds = matcher.group(11).toInt()
+        val crop4 = matcher.groupValues[6]
+        val crop5 = matcher.groupValues[7]
+        val crop6 = matcher.groupValues[8]
+        val hours = matcher.groupValues[9].toInt()
+        val minutes = matcher.groupValues[10].toInt()
+        val seconds = matcher.groupValues[11].toInt()
 
         val hoursStr = timeFunc(hours, "h")
         val minutesStr = timeFunc(minutes, "m")
@@ -156,13 +153,13 @@ object SpecialFunctions {
         )
     }
 
-    private fun contest4Handler(originalText: String, matcher: Matcher): FormatResult {
-        val crop1 = matcher.group(1)
-        val crop2 = matcher.group(2)
-        val crop3 = matcher.group(3)
-        val hours = matcher.group(4).toInt()
-        val minutes = matcher.group(5).toInt()
-        val seconds = matcher.group(6).toInt()
+    private fun contest4Handler(originalText: String, matcher: MatchResult): FormatResult {
+        val crop1 = matcher.groupValues[1]
+        val crop2 = matcher.groupValues[2]
+        val crop3 = matcher.groupValues[3]
+        val hours = matcher.groupValues[4].toInt()
+        val minutes = matcher.groupValues[5].toInt()
+        val seconds = matcher.groupValues[6].toInt()
 
         val hoursStr = timeFunc(hours, "h")
         val minutesStr = timeFunc(minutes, "m")
@@ -174,16 +171,16 @@ object SpecialFunctions {
         )
     }
 
-    private fun bestiaryHandler(originalText: String, matcher: Matcher): FormatResult {
+    private fun bestiaryHandler(originalText: String, matcher: MatchResult): FormatResult {
         val maxPerPage = CONFIG_I.botCategory.getLineCount()
 
-        val bestiary = matcher.group(1)
-        val user = matcher.group(2)
-        val profile = matcher.group(3)
-        val message = matcher.group(4)
+        val bestiary = matcher.groupValues[1]
+        val user = matcher.groupValues[2]
+        val profile = matcher.groupValues[3]
+        val message = matcher.groupValues[4]
 
         // A single, more robust pattern to capture all data points at once
-        val bestiaryDataPattern = Pattern.compile("(\\w[\\w\\s]*?) (\\d+)/(\\d+)(?: \\(([\\d.]+)\\))?")
+        val bestiaryDataPattern = Regex("""(\w[\w\s]*?) (\d+)/(\d+)(?: \(([\d.]+)\))?""")
 
         val prefix = parse("\n &6&l$bestiary bestiary - &f&l$user (&f&l$profile)&6&l\n ")
         val pages = mutableListOf<Text>()
@@ -191,18 +188,17 @@ object SpecialFunctions {
         var entriesOnPage = 0
 
         // Use the single pattern on the whole message
-        val entryMatcher = bestiaryDataPattern.matcher(message)
-        while (entryMatcher.find()) {
+        for (match in bestiaryDataPattern.findAll(message)) {
             if (entriesOnPage == maxPerPage) {
                 pages.add(parse(currentPageContent.toString()))
                 currentPageContent.setLength(0) // More efficient than new StringBuilder()
                 entriesOnPage = 0
             }
 
-            val name = entryMatcher.group(1).trim()
-            val current = entryMatcher.group(2)
-            val max = entryMatcher.group(3)
-            val kdrString = entryMatcher.group(4) // Can be null
+            val name = match.groupValues[1].trim()
+            val current = match.groupValues[2]
+            val max = match.groupValues[3]
+            val kdrString = match.groupValues[4] // Can be empty
 
             if (entriesOnPage != 0) {
                 currentPageContent.append("\n")
@@ -210,7 +206,7 @@ object SpecialFunctions {
 
             currentPageContent.append(" &e&l$name &f&l$current&e&l/&f&l$max")
 
-            if (kdrString != null) {
+            if (kdrString.isNotEmpty()) {
                 val kdr = kdrString.toDouble()
                 val color = when (kdr) {
                     in 1.00..Double.MAX_VALUE -> ColorCode.GREEN.getMcCode()
@@ -247,11 +243,11 @@ object SpecialFunctions {
         )
     }
 
-    private fun bestiary2Handler(originalText: String, matcher: Matcher): FormatResult {
-        val mob = matcher.group(1)
-        val user = matcher.group(2)
-        val profile = matcher.group(3)
-        val num = matcher.group(4)
+    private fun bestiary2Handler(originalText: String, matcher: MatchResult): FormatResult {
+        val mob = matcher.groupValues[1]
+        val user = matcher.groupValues[2]
+        val profile = matcher.groupValues[3]
+        val num = matcher.groupValues[4]
 
         val str = if (num.toInt() > 0) "&a&lPro" else "&4&l0"
 
@@ -261,17 +257,17 @@ object SpecialFunctions {
         )
     }
 
-    private fun collectionHandler(originalText: String, matcher: Matcher): FormatResult {
+    private fun collectionHandler(originalText: String, matcher: MatchResult): FormatResult {
         val maxPerPage = CONFIG_I.botCategory.getLineCount()
 
-        val skill = matcher.group(1)
-        val user = matcher.group(2)
-        val profile = matcher.group(3)
-        val message = matcher.group(4)
+        val skill = matcher.groupValues[1]
+        val user = matcher.groupValues[2]
+        val profile = matcher.groupValues[3]
+        val message = matcher.groupValues[4]
 
         // 1. Replaced the two patterns with a single, more direct one.
         // This pattern captures all necessary groups in one pass.
-        val dataPattern = Pattern.compile("([\\w\\s]*) (\\d+)/(\\d+) \\(([^)]+)\\)")
+        val dataPattern = Regex("""([\w\s]*) (\d+)/(\d+) \(([^)]+)\)""")
 
         val prefix = parse("\n &6&l${capitalizeFirstLetter(skill)} collections - &f&l$user (&f&l$profile)&6&l\n ")
 
@@ -279,32 +275,27 @@ object SpecialFunctions {
         val currentPageContent = StringBuilder()
         var entriesOnPage = 0
 
-        // 2. The loop is now simpler, with no nested matching.
-        val entryMatcher = dataPattern.matcher(message)
-        while (entryMatcher.find()) {
+        for (match in dataPattern.findAll(message)) {
             if (entriesOnPage == maxPerPage) {
                 pages.add(parse(currentPageContent.toString()))
                 currentPageContent.setLength(0)
                 entriesOnPage = 0
             }
 
-            // 3. All data is retrieved directly from the single 'entryMatcher'.
-            val name = entryMatcher.group(1).trim()
-            val current = entryMatcher.group(2).toInt()
-            val max = entryMatcher.group(3).toInt()
-            val progress = entryMatcher.group(4) // e.g., "1,234" or "1,234/5,678"
+            val name = match.groupValues[1].trim()
+            val current = match.groupValues[2].toInt()
+            val max = match.groupValues[3].toInt()
+            val progress = match.groupValues[4]
 
             if (entriesOnPage != 0) {
                 currentPageContent.append("\n")
             }
 
             val median = Math.floorDiv(max, 4)
-            val numberColor = if (current == max) {
-                ColorCode.GREEN
-            } else if (current > median) {
-                ColorCode.GOLD
-            } else {
-                ColorCode.RED
+            val numberColor = when {
+                current == max -> ColorCode.GREEN
+                current > median -> ColorCode.GOLD
+                else -> ColorCode.RED
             }
 
             val formattedProgress = progress.replace("/", "&e&l/&f&l")
@@ -340,10 +331,10 @@ object SpecialFunctions {
         )
     }
 
-    private fun discordHandler(originalText: String, matcher: Matcher): FormatResult {
-        val user = matcher.group(1)
-        var message = matcher.group(2)
-        val userName: String?
+    private fun discordHandler(originalText: String, matcher: MatchResult): FormatResult {
+        val user = matcher.groupValues[1]
+        var message = matcher.groupValues[2]
+        val userName: String
 
         // This logic handles cases where the message contains ": " and the regex captures it as part of the user.
         // It correctly reassembles the user and message parts.
@@ -372,9 +363,9 @@ object SpecialFunctions {
                 continue
             }
 
-            val linkMatcher = LINK_PATTERN.matcher(part)
+            val linkMatcher = LINK_PATTERN.matchEntire(part)
             //Treat links
-            val formattedPart = if (linkMatcher.matches()) {
+            val formattedPart = if (linkMatcher != null) {
                 formatLink(part, linkMatcher)
             } else {
                 parse("${CONFIG_I.discordCategory.messageColor.get().getMcCode()}$part")
@@ -393,6 +384,6 @@ object SpecialFunctions {
     }
 
     fun interface SpecialFunction {
-        fun run(originalText: String, matcher: Matcher): FormatResult
+        fun run(originalText: String, matcher: MatchResult): FormatResult
     }
 }

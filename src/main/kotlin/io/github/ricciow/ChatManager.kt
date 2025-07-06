@@ -9,7 +9,6 @@ import io.github.ricciow.util.TextParser.parse
 import io.github.ricciow.util.TextParser.parseHoverable
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.minecraft.util.Formatting
-import java.util.regex.Pattern
 
 interface ChatResult {
     fun handle(): Boolean

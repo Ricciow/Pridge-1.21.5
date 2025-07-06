@@ -1,8 +1,6 @@
 package io.github.ricciow.util
 
-import kotlinx.io.IOException
 import java.net.URI
-import java.net.URISyntaxException
 import java.nio.charset.StandardCharsets
 
 object UrlContentFetcher {
@@ -15,9 +13,7 @@ object UrlContentFetcher {
     fun fetchContentFromURL(urlString: String): String? {
         return try {
             URI(urlString).toURL().readText(StandardCharsets.UTF_8)
-        } catch (e: URISyntaxException) {
-            null
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             null
         }
     }

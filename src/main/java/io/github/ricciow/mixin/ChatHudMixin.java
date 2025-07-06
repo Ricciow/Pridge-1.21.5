@@ -22,7 +22,7 @@ public abstract class ChatHudMixin implements IdentifiableChatHud {
 
         if (id != 0) {
             IChatHudLineKt.cast(line).pridge$setIdentifier(id);
-            ChatUtils.INSTANCE.setNextMessageId(-1);
+            ChatUtils.INSTANCE.setNextMessageId(0);
         }
     }
 
@@ -31,7 +31,7 @@ public abstract class ChatHudMixin implements IdentifiableChatHud {
             at = @At("TAIL")
     )
     private void onTail(ChatHudLine msg, CallbackInfo ci) {
-        ChatUtils.INSTANCE.setNextMessageId(-1);
+        ChatUtils.INSTANCE.setNextMessageId(0);
     }
 
     @Inject(

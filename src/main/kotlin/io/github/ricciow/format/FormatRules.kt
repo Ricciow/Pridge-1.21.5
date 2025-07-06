@@ -1,56 +1,54 @@
 package io.github.ricciow.format
 
 import io.github.ricciow.util.PridgeLogger
-import java.util.regex.Pattern
 
-abstract class FormatRule {
+abstract class FormatRule<T : Any> {
+    lateinit var trigger: T
+    lateinit var finalFormat: String
+    open fun initialize() {}
     abstract fun process(text: String): FormatResult?
-    abstract fun initialize()
 }
 
-class RegexFormatRule : FormatRule() {
-    lateinit var trigger: String
-    lateinit var finalFormat: String
+class RegexFormatRule : FormatRule<String>() {
     lateinit var groupFormatting: MutableMap<Int, MutableMap<String, String>>
 
     @Transient
-    var pattern: Pattern? = null
+    var pattern: Regex? = null
 
     override fun initialize() {
-        pattern = Pattern.compile(trigger)
-    }
-
-    override fun toString(): String {
-        return trigger
+        pattern = try {
+            trigger.toRegex()
+        } catch (e: Exception) {
+            PridgeLogger.error("Failed to compile regex pattern for $trigger", e)
+            null
+        }
     }
 
     override fun process(text: String): FormatResult? {
-        val pattern = this.pattern ?: run {
+        val regex = this.pattern ?: run {
             PridgeLogger.warn("Pattern for $trigger is null")
             return null
         }
 
-        val matcher = pattern.matcher(text)
-
-        if (!matcher.matches()) return null
+        val matchResult = regex.matchEntire(text) ?: return null
 
         if (groupFormatting.isEmpty()) {
-            return FormatResult(matcher.replaceAll(finalFormat), botText = true)
+            return FormatResult(regex.replace(text, finalFormat), botText = true)
         }
 
         var result = finalFormat
 
-        for (i in 1..matcher.groupCount()) {
-            val capturedText = matcher.group(i)
+        for (i in 1..matchResult.groupValues.lastIndex) {
+            val capturedText = matchResult.groupValues[i]
             var replacementText = capturedText
 
-            groupFormatting[i]?.let { conditionalFormats ->
+            groupFormatting[i]?.let { format ->
                 replacementText = when {
-                    conditionalFormats.containsKey(capturedText) ->
-                        conditionalFormats[capturedText]?.replace($$"${str}", capturedText) ?: capturedText
+                    format.containsKey(capturedText) ->
+                        format[capturedText]?.replace($$"${str}", capturedText) ?: capturedText
 
-                    conditionalFormats.containsKey("defaultStr") ->
-                        conditionalFormats["defaultStr"]?.replace($$"${str}", capturedText) ?: capturedText
+                    format.containsKey("defaultStr") ->
+                        format["defaultStr"]?.replace($$"${str}", capturedText) ?: capturedText
 
                     else -> capturedText
                 }
@@ -61,16 +59,13 @@ class RegexFormatRule : FormatRule() {
 
         return FormatResult(result, botText = true)
     }
-}
-
-class StringFormatRule : FormatRule() {
-    lateinit var trigger: String
-    lateinit var finalFormat: String
 
     override fun toString(): String {
         return trigger
     }
+}
 
+class StringFormatRule : FormatRule<String>() {
     override fun process(text: String): FormatResult? {
         if (trigger == text) {
             return FormatResult(finalFormat, botText = true)
@@ -78,18 +73,12 @@ class StringFormatRule : FormatRule() {
         return null
     }
 
-    override fun initialize() {
+    override fun toString(): String {
+        return trigger
     }
 }
 
-class StringArrayFormatRule : FormatRule() {
-    lateinit var trigger: MutableList<String>
-    lateinit var finalFormat: String
-
-    override fun toString(): String {
-        return trigger.toString()
-    }
-
+class StringArrayFormatRule : FormatRule<MutableList<String>>() {
     override fun process(text: String): FormatResult? {
         if (trigger.contains(text)) {
             return FormatResult(finalFormat.replace($$"${msg}", text), botText = true)
@@ -97,36 +86,35 @@ class StringArrayFormatRule : FormatRule() {
         return null
     }
 
-    override fun initialize() {
+    override fun toString(): String {
+        return trigger.toString()
     }
 }
 
-internal class SpecialFormatRule : FormatRule() {
-    lateinit var trigger: String
-    var functionName: String? = null
+class SpecialFormatRule : FormatRule<String>() {
+    lateinit var functionName: String
 
     @Transient
-    var pattern: Pattern? = null
+    var pattern: Regex? = null
 
     override fun initialize() {
-        pattern = Pattern.compile(trigger)
+        pattern = try {
+            trigger.toRegex()
+        } catch (e: Exception) {
+            PridgeLogger.error("Failed to compile regex pattern for $trigger", e)
+            null
+        }
+    }
+
+    override fun process(text: String): FormatResult? {
+        val regex = this.pattern ?: return null
+
+        val matchResult = regex.matchEntire(text) ?: return null
+
+        return SpecialFunctions.run(this.functionName, text, matchResult)
     }
 
     override fun toString(): String {
         return trigger
-    }
-
-    override fun process(text: String): FormatResult? {
-        if (pattern == null || functionName == null) {
-            return null
-        }
-
-        val matcher = pattern!!.matcher(text)
-
-        if (matcher.matches()) {
-            return SpecialFunctions.run(this.functionName!!, text, matcher)
-        }
-
-        return null
     }
 }

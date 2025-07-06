@@ -29,9 +29,10 @@ object ReloadFormattingsCommand : Command("reloadformattings") {
             "assets" -> FormatManager.loadFromDefaultAssetAndSave()
             "github" -> FormatManager.loadFromGithubAndSave()
             "config" -> FormatManager.loadFromConfigAndSave()
-            "default" -> FormatManager.initialize()
+            "default" -> FormatManager.loadDefault()
         }
         context.source.sendFeedback(TextParser.parse("&a&lReloaded Formattings with '$reloadType'"))
         lastReloadType = reloadType
+        FormatManager.config.postLoad()
     }
 }

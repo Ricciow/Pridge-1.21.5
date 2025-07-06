@@ -8,7 +8,7 @@ import net.minecraft.client.gui.hud.MessageIndicator
 import net.minecraft.text.Text
 
 object ChatUtils {
-    var nextMessageId = -1
+    var nextMessageId = 0
 
     fun info(string: String, id: Int = 0) = sendMessage(CONFIG_I.guildCategory.name.toText().append(string), id)
 
